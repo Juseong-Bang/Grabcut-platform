@@ -1,0 +1,25 @@
+﻿빌드 시작: 2018-05-31 오후 10:23:31
+     1>2 노드의 "D:\# asan\code backup\AnyVol(2018-05-31)\platform\platform.vcxproj" 프로젝트(Build 대상)입니다.
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"D:\# asan\code backup\AnyVol(2018-05-31)\\3rdparty\DCMTK\include" /I.\GeneratedFiles /I. /IC:\Qt\Qt5.2.1\5.2.1\msvc2012\include /I.\GeneratedFiles\Release /IC:\Qt\Qt5.2.1\5.2.1\msvc2012\include\QtCore /IC:\Qt\Qt5.2.1\5.2.1\msvc2012\include\QtGui /IC:\Qt\Qt5.2.1\5.2.1\msvc2012\include\QtWidgets /I"C:\Program Files (x86)\Visual Leak Detector\include" /nologo /W1 /WX- /O2 /Oy- /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t- /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt image.cpp
+         image.cpp
+     1>c:\opencv231\build\include\opencv2\flann\dist.h : warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\# asan\code backup\AnyVol(2018-05-31)\Win32\Release\\platform.exe" /NOLOGO /LIBPATH:"D:\# asan\code backup\AnyVol(2018-05-31)\\3rdparty\DCMTK\lib" /LIBPATH:C:\Qt\Qt5.2.1\5.2.1\msvc2012\lib /LIBPATH:"C:\Program Files (x86)\Visual Leak Detector\lib\Win32" qtmain.lib Qt5Core.lib Qt5Gui.lib Qt5Widgets.lib opencv_calib3d231.lib opencv_contrib231.lib opencv_core231.lib opencv_features2d231.lib opencv_flann231.lib opencv_gpu231.lib opencv_haartraining_engine.lib opencv_highgui231.lib opencv_imgproc231.lib opencv_legacy231.lib opencv_ml231.lib opencv_objdetect231.lib opencv_ts231.lib opencv_video231.lib dcmtk.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"D:\# asan\code backup\AnyVol(2018-05-31)\Win32\Release\platform.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\# asan\code backup\AnyVol(2018-05-31)\Win32\Release\platform.lib" /MACHINE:X86 /SAFESEH Release\platform.obj
+         Release\data.obj
+         Release\qrc_darkstyle.obj
+         Release\moc_image.obj
+         Release\histogramView.obj
+         Release\qrc_platform.obj
+         Release\moc_platform.obj
+         Release\moc_histogramView.obj
+         Release\history.obj
+         Release\ImageProcessing.obj
+         Release\main.obj
+         Release\image.obj
+         platform.vcxproj -> D:\# asan\code backup\AnyVol(2018-05-31)\Win32\Release\platform.exe
+     1>"D:\# asan\code backup\AnyVol(2018-05-31)\platform\platform.vcxproj" 프로젝트를 빌드했습니다(Build 대상).
+
+빌드했습니다.
+
+경과 시간: 00:00:01.97
