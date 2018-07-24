@@ -1,6 +1,6 @@
 #ifndef platform_H
 #define platform_H
-
+using namespace std;
 #include <QtWidgets/QMainWindow>
 #include <qtreewidget.h>
 #include <QMouseEvent>
@@ -24,10 +24,12 @@
 #include<opencv\cv.h>
 #include<opencv2\highgui.hpp>
 #include<opencv\cxcore.h>
+#include <opencv2\opencv.hpp>
+
 #include "image.h"
 #include "data.h"
 
-using namespace std;
+
 #define MAX_FILE_LENGTH 64
 #define SAFE_DELETE_ARRAY(p)	{ if(p) delete[](p); p = NULL;}
 #define SAFE_DELETE_VOLUME(p, depth)	{ if(p) {for (int i=0;i<depth;i++)	if(p[i]) delete[](p[i]); } delete[] p; p=NULL;};

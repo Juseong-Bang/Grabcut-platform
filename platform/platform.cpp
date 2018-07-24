@@ -18,9 +18,9 @@ CPlatform::~CPlatform()
 }
 
 // Borderless Main Window
-BorderlessMainWindow::BorderlessMainWindow(QWidget *parent) : QMainWindow(parent, Qt::CustomizeWindowHint ) {
+BorderlessMainWindow::BorderlessMainWindow(QWidget *parent) : QMainWindow(parent, Qt::CustomizeWindowHint) {
 	setObjectName("borderlessMainWindow");
-	setWindowFlags(Qt::FramelessWindowHint| Qt::WindowSystemMenuHint);
+	setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
 	this->resize(1024, 680);
 
 	mMainWindow = new CPlatform(this);
@@ -98,7 +98,7 @@ void BorderlessMainWindow::mousePressEvent(QMouseEvent* event) {
 	if (!mTitlebarWidget->underMouse() && !mWindowTitle->underMouse())
 		return;
 
-	if(event->button() == Qt::LeftButton) {
+	if (event->button() == Qt::LeftButton) {
 		mMoving = true;
 		mLastMousePosition = event->pos();
 	}
@@ -107,15 +107,15 @@ void BorderlessMainWindow::mouseMoveEvent(QMouseEvent* event) {
 	if (!mTitlebarWidget->underMouse() && !mWindowTitle->underMouse())
 		return;
 
-	if( event->buttons().testFlag(Qt::LeftButton) && mMoving) {
+	if (event->buttons().testFlag(Qt::LeftButton) && mMoving) {
 		this->move(this->pos() + (event->pos() - mLastMousePosition));
 	}
 }
 void BorderlessMainWindow::mouseReleaseEvent(QMouseEvent* event) {
 	if (!mTitlebarWidget->underMouse() && !mWindowTitle->underMouse())
-	return;
+		return;
 
-	if(event->button() == Qt::LeftButton) {
+	if (event->button() == Qt::LeftButton) {
 		mMoving = false;
 	}
 }
@@ -127,7 +127,8 @@ void BorderlessMainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
 	mMaximized = !mMaximized;
 	if (mMaximized) {
 		slot_maximized();
-	} else {
+	}
+	else {
 		slot_restored();
 	}
 }
@@ -155,10 +156,10 @@ void BorderlessMainWindow::resizeEvent(QResizeEvent* event)
 	int nImageLayoutHeight = mMainWindow->ui.verticalSpacer_ScreenHeight->geometry().height();
 
 	// 너비는 변하질 않음...
-	if(mMainWindow->m_ciImage != NULL) {
+	if (mMainWindow->m_ciImage != NULL) {
 		int nWidth = 0;
 		int nHeight = 0;
-		if(nImageLayoutWidth > nImageLayoutHeight) {
+		if (nImageLayoutWidth > nImageLayoutHeight) {
 			nWidth = nImageLayoutHeight;
 			nHeight = nImageLayoutHeight * ((float)mMainWindow->m_ciImage->m_nImageHeight / (float)mMainWindow->m_ciImage->m_nImageWidth);
 		}
@@ -167,7 +168,7 @@ void BorderlessMainWindow::resizeEvent(QResizeEvent* event)
 			nHeight = nImageLayoutWidth * ((float)mMainWindow->m_ciImage->m_nImageHeight / (float)mMainWindow->m_ciImage->m_nImageWidth);
 		}
 
-		mMainWindow->m_ciImage->setImageScreenSize(nWidth,nHeight);
+		mMainWindow->m_ciImage->setImageScreenSize(nWidth, nHeight);
 	}
 }
 
@@ -179,7 +180,7 @@ void CPlatform::init()
 }
 void CPlatform::clear()
 {
-	if(m_ciImage != NULL) {
+	if (m_ciImage != NULL) {
 		delete m_ciImage;
 		m_ciImage = NULL;
 	}
@@ -202,15 +203,15 @@ void CPlatform::setSignalSlot()
 }
 void CPlatform::setProgressBarValue(int nCurrentIdx, int nMaximumIdx)
 {
-	float fValue = (float)(nCurrentIdx+1) / (float)nMaximumIdx * 100;
+	float fValue = (float)(nCurrentIdx + 1) / (float)nMaximumIdx * 100;
 
-	if(nCurrentIdx == 0) {
+	if (nCurrentIdx == 0) {
 		progressBar->setVisible(true);
 	}
 
 	progressBar->setValue(fValue);
 
-	if((nCurrentIdx+1) == nMaximumIdx) {
+	if ((nCurrentIdx + 1) == nMaximumIdx) {
 		progressBar->setValue(0);
 		progressBar->setVisible(false);
 	}
@@ -223,10 +224,10 @@ void CPlatform::resizeEvent(QResizeEvent* event)
 	int nImageLayoutHeight = ui.verticalSpacer_ScreenHeight->geometry().height();
 
 	// 너비는 변하질 않음...
-	if(m_ciImage != NULL) {
+	if (m_ciImage != NULL) {
 		int nWidth = 0;
 		int nHeight = 0;
-		if(nImageLayoutWidth > nImageLayoutHeight) {
+		if (nImageLayoutWidth > nImageLayoutHeight) {
 			nWidth = nImageLayoutHeight;
 			nHeight = nImageLayoutHeight * ((float)m_ciImage->m_nImageHeight / (float)m_ciImage->m_nImageWidth);
 		}
@@ -235,7 +236,7 @@ void CPlatform::resizeEvent(QResizeEvent* event)
 			nHeight = nImageLayoutWidth * ((float)m_ciImage->m_nImageHeight / (float)m_ciImage->m_nImageWidth);
 		}
 
-		m_ciImage->setImageScreenSize(nWidth,nHeight);
+		m_ciImage->setImageScreenSize(nWidth, nHeight);
 	}
 }
 
@@ -243,8 +244,8 @@ void CPlatform::resizeEvent(QResizeEvent* event)
 void CPlatform::dragEnterEvent(QDragEnterEvent* event)
 {
 	if (event->mimeData()->hasUrls()) {
-        event->acceptProposedAction();
-    }
+		event->acceptProposedAction();
+	}
 }
 void CPlatform::dropEvent(QDropEvent* event)
 {
@@ -256,23 +257,23 @@ void CPlatform::dropEvent(QDropEvent* event)
 	QString fileExtenstion;
 
 	// Drag 한 파일을 확장자별로 분류
-	foreach (const QUrl &url, event->mimeData()->urls()) {
+	foreach(const QUrl &url, event->mimeData()->urls()) {
 		fileName = url.toLocalFile();
 		fileToken = fileName.split('.');
-		fileExtenstion = fileToken.at(fileToken.size()-1);
+		fileExtenstion = fileToken.at(fileToken.size() - 1);
 
 		QFileInfo f(fileName);
-		if(f.isDir()) {
-			QDirIterator list(fileName, QDir::Dirs|QDir::Files, QDirIterator::Subdirectories);
+		if (f.isDir()) {
+			QDirIterator list(fileName, QDir::Dirs | QDir::Files, QDirIterator::Subdirectories);
 			do {
 				list.next();
-				if(list.fileInfo().isDir() == false) {
+				if (list.fileInfo().isDir() == false) {
 					fileName = list.filePath();
 					fileToken = fileName.split('.');
 					fileExtenstion = fileToken.at(fileToken.size() - 1);
 
-					if(fileToken.size() > 1) {
-						if(fileExtenstion.compare("bmp") == 0) {
+					if (fileToken.size() > 1) {
+						if (fileExtenstion.compare("bmp") == 0) {
 							fileMaskList.push_back(fileName);
 						}
 						else {
@@ -283,8 +284,8 @@ void CPlatform::dropEvent(QDropEvent* event)
 			} while (list.hasNext());
 		}
 		else {
-			if(fileToken.size() > 1) {
-				if(fileExtenstion.compare("bmp") == 0) {
+			if (fileToken.size() > 1) {
+				if (fileExtenstion.compare("bmp") == 0) {
 					fileMaskList.push_back(fileName);
 				}
 				else {
@@ -300,17 +301,17 @@ void CPlatform::dropEvent(QDropEvent* event)
 // keyboard event //
 void CPlatform::keyPressEvent(QKeyEvent* event)
 {
-	switch(event->key()) {
-		case Qt::Key_Control:
-			
+	switch (event->key()) {
+	case Qt::Key_Control:
+
 		break;
 	}
 }
 void CPlatform::keyReleaseEvent(QKeyEvent* event)
 {
-	switch(event->key()) {
-		case Qt::Key_Control:
-			
+	switch (event->key()) {
+	case Qt::Key_Control:
+
 		break;
 	}
 }
@@ -318,17 +319,17 @@ void CPlatform::keyReleaseEvent(QKeyEvent* event)
 // open, load, Image //
 void CPlatform::readDICOM(QStringList fileList)
 {
-	if(fileList.size() > 0) {
-		char cInputPath[1024] = {0};
+	if (fileList.size() > 0) {
+		char cInputPath[1024] = { 0 };
 		int nFileCount = fileList.size();
-		for(int i=0; i< nFileCount; i++) {
+		for (int i = 0; i < nFileCount; i++) {
 			QString path = fileList.at(i).toUtf8().constData();
 			QTextCodec* c = QTextCodec::codecForLocale();
 			QByteArray b = c->fromUnicode(path);
 			std::memcpy(cInputPath, b.data(), b.size() + 1);
 
 			int idx = m_ciData.inputDICOM(cInputPath);
-			if(idx == -1) {continue;}
+			if (idx == -1) { continue; }
 
 			m_nActivatedFrameIdx = idx;
 			char* pcPatientNum = m_ciData.getPatientName(idx);
@@ -350,7 +351,7 @@ void CPlatform::showImage(int nFrameIdx)
 	int nHeight = m_ciData.getHeight(nFrameIdx);
 
 	// 처음 Data를 로드하는 경우
-	if(m_ciImage == NULL) {
+	if (m_ciImage == NULL) {
 		m_ciImage = new CImage;
 
 		m_ciImage->init(this);
@@ -372,7 +373,7 @@ void CPlatform::showImage(int nFrameIdx)
 	int nImageLayoutWidth = ui.horizontalSpacer_ScreenWidth->geometry().width();
 	int nImageLayoutHeight = ui.verticalSpacer_ScreenHeight->geometry().height();
 
-	if(nImageLayoutWidth > nImageLayoutHeight) {
+	if (nImageLayoutWidth > nImageLayoutHeight) {
 		nWidth = nImageLayoutHeight;
 		nHeight = nImageLayoutHeight * ((float)m_ciImage->m_nImageHeight / (float)m_ciImage->m_nImageWidth);
 	}
@@ -381,11 +382,11 @@ void CPlatform::showImage(int nFrameIdx)
 		nHeight = nImageLayoutWidth * ((float)m_ciImage->m_nImageHeight / (float)m_ciImage->m_nImageWidth);
 	}
 
-	m_ciImage->setImageScreenSize(nWidth,nHeight);
+	m_ciImage->setImageScreenSize(nWidth, nHeight);
 }
 void CPlatform::showImage(QTreeWidgetItem* item, int column)
 {
-	if(item->text(1) != 0) {
+	if (item->text(1) != 0) {
 		int nFrameIdx = item->text(1).toInt();
 		showImage(nFrameIdx);
 	}
@@ -401,31 +402,48 @@ void CPlatform::run()
 
 	// mousePoint // (mouse 좌표는 이미지 크기에 맞도록 자동 변환되어서 반환) (화면크기 x)
 	// QPoint qpoint = m_ciImage->getMousePoint();	// Mouse 좌표 값 한개만 가져올때
-	// QVector<QPoint> qpoints = m_ciImage->getMousePoints();	// 드래그
+	QVector<QPoint> qpoints = m_ciImage->getMousePoints();	// 드래그
 
-	// 배열 복사 //
+ // 배열 복사 //
 	int nWidth = 0;
 	int nHeight = 0;
 	short* pusImage = NULL;
 	unsigned char* pucImage = NULL;
-	
+
 	m_ciData.copyRawImage(0, nWidth, nHeight, pusImage);
 	pucImage = new unsigned char[nWidth * nHeight];
 	memset(pucImage, 0, sizeof(unsigned char) * nWidth * nHeight);
 
-	// 알고리즘 수행 //
-	// sample code
-	for(int row=0; row< nHeight; row++) {
-		for(int col=0; col< nWidth; col++) {
+
+
+
+	int iter = 1;
+	int xst = qpoints.front().x();
+	int xed = qpoints.last().x();
+	int yst = qpoints.front().y();
+	int yed = qpoints.last().y();
+
+	cv::Rect roi(cv::Point2i(xst, yst), cv::Point2i(xed, yed));
+	
+	//cv::Mat img(nHeight, nWidth, *pusImage);
+	//cv::grabCut(img, msk, roi, bg, fg, iter, 0);
+	//cv::imshow("test", img);
+
+
+	for (int row = 0; row < nHeight; row++) {
+		for (int col = 0; col < nWidth; col++) {
 			int index = row*nWidth + col;
-			pucImage[index] = 255 - pusImage[index];
+			if (yst <= row && row <= yed &&  col <= xed && xst <= col) {
+				pucImage[index] = pusImage[index];
+			}
+			else
+				pucImage[index] = 255;
 		}
 	}
 
-	// 결과값 메모리에 복사 //
-	m_ciImage->setImage(pucImage, nWidth, nHeight);
 
-	// 메모리 소멸 //
+	m_ciImage->setImage(pucImage, nWidth, nHeight);// 결과값 메모리에 복사
 	SAFE_DELETE_ARRAY(pusImage);
-	SAFE_DELETE_ARRAY(pucImage);
+	SAFE_DELETE_ARRAY(pucImage);// 메모리 소멸 
+
 }
