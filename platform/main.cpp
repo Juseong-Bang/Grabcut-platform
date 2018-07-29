@@ -1,3 +1,7 @@
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#undef Q_COMPILER_INITIALIZER_LISTS
+#endif
+
 #include "platform.h"
 #include <QtWidgets/QApplication>
 //#include <vld.h>

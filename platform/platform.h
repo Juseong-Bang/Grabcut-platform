@@ -1,6 +1,5 @@
 #ifndef platform_H
 #define platform_H
-using namespace std;
 #include <QtWidgets/QMainWindow>
 #include <qtreewidget.h>
 #include <QMouseEvent>
@@ -21,13 +20,14 @@ using namespace std;
 #include "dcmtk/config/osconfig.h" 
 #include "dcmtk/dcmdata/dctk.h"
 
-#include<opencv\cv.h>
-#include<opencv2\highgui.hpp>
-#include<opencv\cxcore.h>
-#include <opencv2\opencv.hpp>
+#include<cv.h>
+#include<highgui.h>
+#include<cxcore.h>
 
 #include "image.h"
 #include "data.h"
+
+using namespace std;
 
 
 #define MAX_FILE_LENGTH 64

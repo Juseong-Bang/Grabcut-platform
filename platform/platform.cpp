@@ -404,46 +404,69 @@ void CPlatform::run()
 	// QPoint qpoint = m_ciImage->getMousePoint();	// Mouse 좌표 값 한개만 가져올때
 	QVector<QPoint> qpoints = m_ciImage->getMousePoints();	// 드래그
 
- // 배열 복사 //
+	// 배열 복사 //
 	int nWidth = 0;
 	int nHeight = 0;
 	short* pusImage = NULL;
 	unsigned char* pucImage = NULL;
-
-	m_ciData.copyRawImage(0, nWidth, nHeight, pusImage);
-	pucImage = new unsigned char[nWidth * nHeight];
-	memset(pucImage, 0, sizeof(unsigned char) * nWidth * nHeight);
-
-
-
-
-	int iter = 1;
 	int xst = qpoints.front().x();
 	int xed = qpoints.last().x();
 	int yst = qpoints.front().y();
 	int yed = qpoints.last().y();
 
+	cv::Mat msk(nHeight, nWidth, CV_8UC1);
+	cv::Mat bg(nHeight, nWidth, CV_8UC1);
+	cv::Mat fg(nHeight, nWidth, CV_8UC1);
 	cv::Rect roi(cv::Point2i(xst, yst), cv::Point2i(xed, yed));
-	
-	//cv::Mat img(nHeight, nWidth, *pusImage);
-	//cv::grabCut(img, msk, roi, bg, fg, iter, 0);
-	//cv::imshow("test", img);
 
+	m_ciData.copyRawImage(0, nWidth, nHeight, pusImage);
+	pucImage = new unsigned char[nWidth * nHeight];
+	memset(pucImage, 0, sizeof(unsigned char) * nWidth * nHeight);
+
+	// sample code
+	for (int row = 0; row < nHeight; row++) {
+		for (int col = 0; col < nWidth; col++) {
+			int index = row*nWidth + col;
+			pucImage[index] = pusImage[index];
+		}
+	}
+	cv::Mat image(nHeight, nWidth, CV_8UC1, pucImage);
+	cv::Mat RGBimg(nHeight, nWidth, CV_8UC3);
+	cv::Mat foreground(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+	cv::Mat background(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+
+	cv::cvtColor(image, RGBimg, CV_GRAY2RGB);
+	cv::grabCut(RGBimg, msk, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
+	cv::compare(msk, cv::GC_PR_FGD, msk, cv::CMP_EQ);
+	cv::rectangle(image, roi, cv::Scalar(255, 255, 255), 1);
+
+	image.copyTo(foreground, msk);
+	image.copyTo(background, ~msk);
+
+	cv::imshow("image", image);
+	cv::imshow("Foreground", foreground);
+	cv::imshow("back", background);
 
 	for (int row = 0; row < nHeight; row++) {
 		for (int col = 0; col < nWidth; col++) {
 			int index = row*nWidth + col;
-			if (yst <= row && row <= yed &&  col <= xed && xst <= col) {
-				pucImage[index] = pusImage[index];
+			if ((yst == row || row == yed) && (col <= xed && xst <= col))
+			{
+				pucImage[index] = 255;
+			}
+			else if ((yst <= row && row <= yed) && (col == xed || xst == col))
+			{
+				pucImage[index] = 255;
 			}
 			else
-				pucImage[index] = 255;
+				pucImage[index] = pusImage[index];
 		}
 	}
 
+	// 결과값 메모리에 복사 //
+	m_ciImage->setImage(pucImage, nWidth, nHeight);
 
-	m_ciImage->setImage(pucImage, nWidth, nHeight);// 결과값 메모리에 복사
+	// 메모리 소멸 //
 	SAFE_DELETE_ARRAY(pusImage);
-	SAFE_DELETE_ARRAY(pucImage);// 메모리 소멸 
-
+	SAFE_DELETE_ARRAY(pucImage);
 }
