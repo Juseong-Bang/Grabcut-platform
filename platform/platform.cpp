@@ -420,23 +420,26 @@ void CPlatform::run()
 	cv::Rect roi(cv::Point2i(xst, yst), cv::Point2i(xed, yed));
 
 	m_ciData.copyRawImage(0, nWidth, nHeight, pusImage);
-	pucImage = new unsigned char[nWidth * nHeight];
+	
+	pucImage = new unsigned char[nWidth * nHeight*3];
 	memset(pucImage, 0, sizeof(unsigned char) * nWidth * nHeight);
 
 	// sample code
 	for (int row = 0; row < nHeight; row++) {
-		for (int col = 0; col < nWidth; col++) {
-			int index = row*nWidth + col;
-			pucImage[index] = pusImage[index];
+		for (int col = 0; col < nWidth; col++) 
+		for(int ch =0 ;ch<3 ;ch++)
+		{
+			int index = row*nWidth*3 + col*3;
+			pucImage[index+ch] = pusImage[index+ch];
 		}
 	}
-	cv::Mat image(nHeight, nWidth, CV_8UC1, pucImage);
-	cv::Mat RGBimg(nHeight, nWidth, CV_8UC3);
+	cv::Mat image(nHeight, nWidth, CV_8UC3, pucImage);
+	
 	cv::Mat foreground(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 	cv::Mat background(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 
-	cv::cvtColor(image, RGBimg, CV_GRAY2RGB);
-	cv::grabCut(RGBimg, msk, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
+//	cv::cvtColor(image, RGBimg, CV_GRAY2RGB);
+	cv::grabCut(image, msk, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
 	cv::compare(msk, cv::GC_PR_FGD, msk, cv::CMP_EQ);
 	cv::rectangle(image, roi, cv::Scalar(255, 255, 255), 1);
 
@@ -446,7 +449,7 @@ void CPlatform::run()
 	cv::imshow("image", image);
 	cv::imshow("Foreground", foreground);
 	cv::imshow("back", background);
-
+	/*
 	for (int row = 0; row < nHeight; row++) {
 		for (int col = 0; col < nWidth; col++) {
 			int index = row*nWidth + col;
@@ -462,7 +465,7 @@ void CPlatform::run()
 				pucImage[index] = pusImage[index];
 		}
 	}
-
+	*/
 	// 결과값 메모리에 복사 //
 	m_ciImage->setImage(pucImage, nWidth, nHeight);
 

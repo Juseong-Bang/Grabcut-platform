@@ -90,12 +90,12 @@ int CData::inputDICOM(char* pcDICOMPath)
 	memset(pcModality, 0, sizeof(char)*MAX_FILE_LENGTH);
 	*/
 
-	char pcPatientName[MAX_FILE_LENGTH] = {0};
-	char pcInstanceNum[MAX_FILE_LENGTH] = {0};
-	char pcInstitutionName[MAX_FILE_LENGTH] = {0};
-	char pcSeriesDate[MAX_FILE_LENGTH] = {0};
-	char pcManufacturerModelName[MAX_FILE_LENGTH] = {0};
-	char pcModality[MAX_FILE_LENGTH] = {0};
+	char pcPatientName[MAX_FILE_LENGTH] = { 0 };
+	char pcInstanceNum[MAX_FILE_LENGTH] = { 0 };
+	char pcInstitutionName[MAX_FILE_LENGTH] = { 0 };
+	char pcSeriesDate[MAX_FILE_LENGTH] = { 0 };
+	char pcManufacturerModelName[MAX_FILE_LENGTH] = { 0 };
+	char pcModality[MAX_FILE_LENGTH] = { 0 };
 	double fPixelSpacing = 0.0;
 	double fSliceThickness = 0.0;
 	int nRow = 0;
@@ -103,15 +103,15 @@ int CData::inputDICOM(char* pcDICOMPath)
 	int nSliceNum = 0;
 
 	bool bLoadSuccess = false;
-	if(strcmp(getFileExtension(pcDICOMPath), "dcm") == 0) {
+	if (strcmp(getFileExtension(pcDICOMPath), "dcm") == 0) {
 		// file load //
 		DcmFileFormat *fileformat = new DcmFileFormat();
 		fileformat->loadFile(pcDICOMPath);
 
 		OFCondition status = fileformat->getDataset()->chooseRepresentation(EXS_LittleEndianExplicit, NULL);
-		if (!status.good()) 
+		if (!status.good())
 		{
-			std::cerr << "DCMTK error: " << status.text() << std::endl; 
+			std::cerr << "DCMTK error: " << status.text() << std::endl;
 			delete fileformat;
 		}
 		else {
@@ -119,8 +119,8 @@ int CData::inputDICOM(char* pcDICOMPath)
 		}
 
 		// declar var //
-		OFString OFStrPatientName, OFStrInstitutionName, OFStrSeriesDate, OFStrManufacturerModelName, 
-				OFStrModality, OFStrPixelSpacing, OFStrSliceThickeness, OFStrRows, OFStrColumns, OFStrInstanceNumber;
+		OFString OFStrPatientName, OFStrInstitutionName, OFStrSeriesDate, OFStrManufacturerModelName,
+			OFStrModality, OFStrPixelSpacing, OFStrSliceThickeness, OFStrRows, OFStrColumns, OFStrInstanceNumber;
 
 		DcmDataset* dataSet = fileformat->getDataset();
 		dataSet->findAndGetOFString(DcmTagKey(0x0010, 0x0010), OFStrPatientName);
@@ -149,14 +149,14 @@ int CData::inputDICOM(char* pcDICOMPath)
 		fileformat->clear();
 		delete fileformat;
 	}
-	else if(strcmp(getFileExtension(pcDICOMPath), "jpg") == 0 || strcmp(getFileExtension(pcDICOMPath), "png") == 0) {
+	else if (strcmp(getFileExtension(pcDICOMPath), "jpg") == 0 || strcmp(getFileExtension(pcDICOMPath), "png") == 0) {
 		// file load //
 		IplImage* image = cvLoadImage(pcDICOMPath, false);
-		if(image != NULL) {
+		if (image != NULL) {
 			bLoadSuccess = true;
 
 			// copy file information //
-			char pcFilePathTemp[MAX_FILE_LENGTH] = {0};
+			char pcFilePathTemp[MAX_FILE_LENGTH] = { 0 };
 			char* pcFileName = NULL;
 
 			std::sprintf(pcFilePathTemp, "%s", pcDICOMPath);
@@ -168,13 +168,13 @@ int CData::inputDICOM(char* pcDICOMPath)
 
 			int nTokenCnt = 0;
 			int nFileNameLength = strlen(pcFileName);
-			for(int i=0; i< nFileNameLength; i++) {
-				char* temp = pcFileName+i;
-				if(*temp == '_') {
+			for (int i = 0; i < nFileNameLength; i++) {
+				char* temp = pcFileName + i;
+				if (*temp == '_') {
 					nTokenCnt++;
 				}
 			}
-			if(nTokenCnt >= 3) {
+			if (nTokenCnt >= 3) {
 				// patientName_SeriesDate_SeriesDateNum_SliceNum//
 				// patientName
 				token = strtok(pcFileName, "_");
@@ -189,7 +189,7 @@ int CData::inputDICOM(char* pcDICOMPath)
 				std::sprintf(pcSeriesDate, "%s_%d", pcSeriesDate, nSeriesDateNum);
 
 				token = strtok(NULL, "_");
-				if(token != NULL) {
+				if (token != NULL) {
 					std::sprintf(pcInstanceNum, "%s", token);
 					nSliceNum = atoi(pcInstanceNum);
 				}
@@ -205,7 +205,7 @@ int CData::inputDICOM(char* pcDICOMPath)
 
 				// instanceNum
 				token = strtok(NULL, "_");
-				if(token != NULL) {
+				if (token != NULL) {
 					std::sprintf(pcInstanceNum, "%s", token);
 					nSliceNum = atoi(pcInstanceNum);
 				}
@@ -218,7 +218,7 @@ int CData::inputDICOM(char* pcDICOMPath)
 			cvReleaseImage(&image);
 		}
 	}
-	if(bLoadSuccess == false) {
+	if (bLoadSuccess == false) {
 		QMessageBox msgBox;
 		msgBox.setText(QString::fromLocal8Bit("Image load 실패 - DICOM Header에 문제가 있습니다."));
 		msgBox.setIcon(QMessageBox::Warning);
@@ -242,12 +242,12 @@ int CData::inputDICOM(char* pcDICOMPath)
 	int nGroupIdx = -1;
 
 	// for dicom header data //
-	for(int i=0; i< m_nFrameCnt; i++) {
-		if(m_pnFrameIdx[i] >= 0) {
-			if(	strcmp(m_ppcPatientName[i], pcPatientName) == 0 &&
+	for (int i = 0; i < m_nFrameCnt; i++) {
+		if (m_pnFrameIdx[i] >= 0) {
+			if (strcmp(m_ppcPatientName[i], pcPatientName) == 0 &&
 				strcmp(m_ppcSeriesDate[i], pcSeriesDate) == 0 &&
-				m_pnInstanceNumber[i] == nSliceNum) 
-			{ 	
+				m_pnInstanceNumber[i] == nSliceNum)
+			{
 				bDuplicateHeader = true;
 				nFrameIdx = i;
 				break;
@@ -258,22 +258,22 @@ int CData::inputDICOM(char* pcDICOMPath)
 			break;
 		}
 	}
-	if(bDuplicateHeader == false) {
-		if( nFrameIdx == -1 ) {
+	if (bDuplicateHeader == false) {
+		if (nFrameIdx == -1) {
 			// 저장 공간이 부족할 경우, 배열 realloc
-			resizeDataArray( m_nFrameCnt + 500 );
+			resizeDataArray(m_nFrameCnt + 500);
 			nFrameIdx = m_nFrameAccumulatedCnt;
 		}
 	}
 
 	// 3. DICOM Header 정보 로드 ////////////////////////////////////////////////////////////////////////
-	if(bDuplicateHeader == false) {
+	if (bDuplicateHeader == false) {
 		// for dicom data //
-		if(m_ppcPatientName[nFrameIdx] == NULL) {m_ppcPatientName[nFrameIdx] = new char[CHAR_MAX_LENGTH];}
-		if(m_ppcInstitutionName[nFrameIdx] == NULL) {m_ppcInstitutionName[nFrameIdx] = new char[CHAR_MAX_LENGTH];}
-		if(m_ppcSeriesDate[nFrameIdx] == NULL) {m_ppcSeriesDate[nFrameIdx] = new char[CHAR_MAX_LENGTH];}
-		if(m_ppcManufacturerModelName[nFrameIdx] == NULL) {m_ppcManufacturerModelName[nFrameIdx] = new char[CHAR_MAX_LENGTH];}
-		if(m_ppcModality[nFrameIdx] == NULL) {m_ppcModality[nFrameIdx] = new char[CHAR_MAX_LENGTH];}
+		if (m_ppcPatientName[nFrameIdx] == NULL) { m_ppcPatientName[nFrameIdx] = new char[CHAR_MAX_LENGTH]; }
+		if (m_ppcInstitutionName[nFrameIdx] == NULL) { m_ppcInstitutionName[nFrameIdx] = new char[CHAR_MAX_LENGTH]; }
+		if (m_ppcSeriesDate[nFrameIdx] == NULL) { m_ppcSeriesDate[nFrameIdx] = new char[CHAR_MAX_LENGTH]; }
+		if (m_ppcManufacturerModelName[nFrameIdx] == NULL) { m_ppcManufacturerModelName[nFrameIdx] = new char[CHAR_MAX_LENGTH]; }
+		if (m_ppcModality[nFrameIdx] == NULL) { m_ppcModality[nFrameIdx] = new char[CHAR_MAX_LENGTH]; }
 
 		m_pnFrameIdx[nFrameIdx] = m_nFrameAccumulatedCnt;
 		m_pnFrameMemoryIdx[nFrameIdx] = m_nFrameAccumulatedCnt;
@@ -292,10 +292,10 @@ int CData::inputDICOM(char* pcDICOMPath)
 	}
 
 	// for group //
-	for(int i=0; i< m_nGroupCnt; i++) {
-		if(m_pnGroupIdx[i] >= 0) {
-			if(	strcmp(m_ppcPatientName[nFrameIdx], m_ppcGroupPatientName[i]) == 0 &&
-				strcmp(m_ppcSeriesDate[nFrameIdx], m_ppcGroupSeriesDate[i]) == 0) 
+	for (int i = 0; i < m_nGroupCnt; i++) {
+		if (m_pnGroupIdx[i] >= 0) {
+			if (strcmp(m_ppcPatientName[nFrameIdx], m_ppcGroupPatientName[i]) == 0 &&
+				strcmp(m_ppcSeriesDate[nFrameIdx], m_ppcGroupSeriesDate[i]) == 0)
 			{
 				bDuplicateGroup = true;
 				nGroupIdx = i;
@@ -307,29 +307,29 @@ int CData::inputDICOM(char* pcDICOMPath)
 			break;
 		}
 	}
-	if(bDuplicateGroup == false) {
-		if( nGroupIdx == -1 ) {
-			resizeGroupArray( m_nGroupCnt + 100 );
+	if (bDuplicateGroup == false) {
+		if (nGroupIdx == -1) {
+			resizeGroupArray(m_nGroupCnt + 100);
 			nGroupIdx = m_nGroupAccumulatedCnt;
 		}
 	}
-	if(bDuplicateGroup == false) {
-		if(m_ppcGroupPatientName[nGroupIdx] == NULL) {m_ppcGroupPatientName[nGroupIdx] = new char[CHAR_MAX_LENGTH];}
-		if(m_ppcGroupSeriesDate[nGroupIdx] == NULL) {m_ppcGroupSeriesDate[nGroupIdx] = new char[CHAR_MAX_LENGTH];}
+	if (bDuplicateGroup == false) {
+		if (m_ppcGroupPatientName[nGroupIdx] == NULL) { m_ppcGroupPatientName[nGroupIdx] = new char[CHAR_MAX_LENGTH]; }
+		if (m_ppcGroupSeriesDate[nGroupIdx] == NULL) { m_ppcGroupSeriesDate[nGroupIdx] = new char[CHAR_MAX_LENGTH]; }
 
 		m_pnGroupIdx[nGroupIdx] = m_nGroupAccumulatedCnt;
 		sprintf(m_ppcGroupPatientName[nGroupIdx], "%s", pcPatientName);
 		sprintf(m_ppcGroupSeriesDate[nGroupIdx], "%s", pcSeriesDate);
-		m_nGroupAccumulatedCnt+= 1;
+		m_nGroupAccumulatedCnt += 1;
 	}
 
-	
+
 
 	// 4. DICOM 파일 이미지 로드 ////////////////////////////////////////////////////////////////////////
 	bool bLoad = false;
 	bLoad = readImage(pcDICOMPath, m_pnWidth[nFrameIdx], m_pnHeight[nFrameIdx], m_ppsRawImage[nFrameIdx], m_ppucLabelImage[nFrameIdx], m_ppucSelectedImage[nFrameIdx], false);
 
-	if(bLoad) {
+	if (bLoad) {
 		m_pnFrameGroupIdx[nFrameIdx] = nGroupIdx;
 		m_nFrameAccumulatedCnt += 1;
 	}
@@ -350,13 +350,13 @@ int CData::inputMask(char* pcMaskPath)
 {
 	// 같은 환자번호/날짜/frame 번호를 검색해서 input
 	char* pcPatientName = new char[CHAR_MAX_LENGTH];
-	char* pcSeriesDate =  new char[CHAR_MAX_LENGTH];
-	char* pcInstanceNumber =  new char[CHAR_MAX_LENGTH];
+	char* pcSeriesDate = new char[CHAR_MAX_LENGTH];
+	char* pcInstanceNumber = new char[CHAR_MAX_LENGTH];
 	char* pcFilePathTemp = new char[MAX_FILE_LENGTH];
 	int nImageWidth = 0, nImageHeight = 0;
 	int nFrameIdx = -1;
 
-	if(strcmp(getFileExtension(pcMaskPath), "bmp") == 0) {
+	if (strcmp(getFileExtension(pcMaskPath), "bmp") == 0) {
 
 		// file 명 ////
 		char* pcFileName = NULL;
@@ -370,13 +370,13 @@ int CData::inputMask(char* pcMaskPath)
 		// patientName
 		int nTokenCnt = 0;
 		int nFileNameLength = strlen(pcFileName);
-		for(int i=0; i< nFileNameLength; i++) {
-			char* temp = pcFileName+i;
-			if(*temp == '_') {
+		for (int i = 0; i < nFileNameLength; i++) {
+			char* temp = pcFileName + i;
+			if (*temp == '_') {
 				nTokenCnt++;
 			}
 		}
-		if(nTokenCnt >= 3) {
+		if (nTokenCnt >= 3) {
 			// patientName_SeriesDate_SeriesDateNum_SliceNum//
 			// patientName
 			token = strtok(pcFileName, "_");
@@ -391,7 +391,7 @@ int CData::inputMask(char* pcMaskPath)
 			std::sprintf(pcSeriesDate, "%s_%d", pcSeriesDate, nSeriesDateNum);
 
 			token = strtok(NULL, "_");
-			if(token != NULL) {
+			if (token != NULL) {
 				std::sprintf(pcInstanceNumber, "%s", token);
 			}
 			else {
@@ -409,7 +409,7 @@ int CData::inputMask(char* pcMaskPath)
 
 			// InstanceNo (slice No.)
 			token = strtok(NULL, "_");
-			if(token != NULL) {
+			if (token != NULL) {
 				std::sprintf(pcInstanceNumber, "%s", token);
 			}
 			else {
@@ -418,11 +418,11 @@ int CData::inputMask(char* pcMaskPath)
 		}
 
 		bool isDup = false;
-		for(int i=0; i< m_nFrameCnt; i++) {
-			if(m_pnFrameIdx[i] >= 0) {
-				if(	strcmp(m_ppcPatientName[i], pcPatientName) == 0 &&
+		for (int i = 0; i < m_nFrameCnt; i++) {
+			if (m_pnFrameIdx[i] >= 0) {
+				if (strcmp(m_ppcPatientName[i], pcPatientName) == 0 &&
 					strcmp(m_ppcSeriesDate[i], pcSeriesDate) == 0 &&
-					m_pnInstanceNumber[i] == atoi(pcInstanceNumber)) 
+					m_pnInstanceNumber[i] == atoi(pcInstanceNumber))
 				{
 					isDup = true;
 					nImageWidth = m_pnWidth[i];
@@ -438,48 +438,48 @@ int CData::inputMask(char* pcMaskPath)
 		SAFE_DELETE_ARRAY(pcInstanceNumber);
 		SAFE_DELETE_ARRAY(pcFilePathTemp);
 
-		if(isDup) {
+		if (isDup) {
 			// image open해서 open한 이미지의 크기와 메모리의 크기가 일치하는지 확인
 			IplImage* maskImage = cvLoadImage(pcMaskPath, false);
-			
-			if(maskImage != NULL) {
+
+			if (maskImage != NULL) {
 				int nMaskImageWidth = maskImage->width;
 				int nMaskImageHeight = maskImage->height;
 
-				if(nMaskImageWidth == nImageWidth && nMaskImageHeight == nImageHeight) {
+				if (nMaskImageWidth == nImageWidth && nMaskImageHeight == nImageHeight) {
 					bool bBinaryMask = false;
-					for(int row=0; row< nImageHeight; row++) {
-						for(int col=0; col< nImageWidth; col++) {
+					for (int row = 0; row < nImageHeight; row++) {
+						for (int col = 0; col < nImageWidth; col++) {
 							int index = row*nImageWidth + col;
 							int maskIndex = maskImage->widthStep*row + col;
 							unsigned char value = (unsigned char)maskImage->imageData[maskIndex];
 
-							if(value == 255) {
+							if (value == 255) {
 								bBinaryMask = true;
 								break;
 							}
 						}
-						if(bBinaryMask) {
+						if (bBinaryMask) {
 							break;
 						}
 					}
 
-					if(bBinaryMask) {
-						for(int row=0; row< nImageHeight; row++) {
-							for(int col=0; col< nImageWidth; col++) {
+					if (bBinaryMask) {
+						for (int row = 0; row < nImageHeight; row++) {
+							for (int col = 0; col < nImageWidth; col++) {
 								int index = row*nImageWidth + col;
 								int maskIndex = maskImage->widthStep*row + col;
 								unsigned char value = (unsigned char)maskImage->imageData[maskIndex];
 
-								if(value > 125) {
+								if (value > 125) {
 									m_ppucLabelImage[nFrameIdx][row*nImageWidth + col] = DEFAULT_LABEL;
 								}
 							}
 						}
 					}
 					else {
-						for(int row=0; row< nImageHeight; row++) {
-							for(int col=0; col< nImageWidth; col++) {
+						for (int row = 0; row < nImageHeight; row++) {
+							for (int col = 0; col < nImageWidth; col++) {
 								int index = row*nImageWidth + col;
 								int maskIndex = maskImage->widthStep*row + col;
 								unsigned char value = (unsigned char)maskImage->imageData[maskIndex];
@@ -528,7 +528,7 @@ int CData::getFrameCnt()
 }
 bool CData::isOccufiedFrame(int nFrameIdx)
 {
-	if(m_pnFrameIdx[nFrameIdx] == -1) {
+	if (m_pnFrameIdx[nFrameIdx] == -1) {
 		return false;
 	}
 	else {
@@ -574,19 +574,21 @@ short* CData::getRawImage(int nFrameIdx)
 bool CData::copyRawImage(int nFrameIdx, int& nWidth, int& nHeight, short* &psRawImage)
 {
 	// 0. input paremter check
-	if(m_pnFrameIdx == NULL || m_pnFrameIdx[nFrameIdx] == -1) {
+	if (m_pnFrameIdx == NULL || m_pnFrameIdx[nFrameIdx] == -1) {
 		return false;
 	}
-	if(psRawImage == NULL) {
+	if (psRawImage == NULL) {
 		nWidth = m_pnWidth[nFrameIdx];
 		nHeight = m_pnHeight[nFrameIdx];
-		psRawImage = new short[nWidth*nHeight];
+		psRawImage = new short[nWidth*nHeight*3];
 	}
 
-	for(int row=0; row< nHeight; row++) {
-		for(int col=0; col< nWidth; col++) {
-			int idx = row*nWidth + col;
-			psRawImage[idx] = m_ppsRawImage[nFrameIdx][idx];
+	for (int row = 0; row < nHeight; row++) {
+		for (int col = 0; col < nWidth; col++) 
+		for(int ch=0;ch<3;ch++)
+		{
+			int idx = row*nWidth*3 + col*3;
+			psRawImage[idx+ch] = m_ppsRawImage[nFrameIdx][idx+ch];
 		}
 	}
 
@@ -595,13 +597,13 @@ bool CData::copyRawImage(int nFrameIdx, int& nWidth, int& nHeight, short* &psRaw
 bool CData::copyRawImages(int nStartFrameIdx, int nEndFrameIdx, int& nFrameCnt, int& nWidth, int& nHeight, short** &ppsRawImages)
 {
 	// 0. input parameter check
-	if(m_pnFrameIdx == NULL || m_pnFrameIdx[nStartFrameIdx] == -1 || m_pnFrameIdx[nEndFrameIdx] == -1) {
+	if (m_pnFrameIdx == NULL || m_pnFrameIdx[nStartFrameIdx] == -1 || m_pnFrameIdx[nEndFrameIdx] == -1) {
 		return false;
 	}
-	if(ppsRawImages != NULL) {
+	if (ppsRawImages != NULL) {
 		return false;
 	}
-	if(nEndFrameIdx < nStartFrameIdx) {
+	if (nEndFrameIdx < nStartFrameIdx) {
 		return false;
 	}
 
@@ -610,16 +612,16 @@ bool CData::copyRawImages(int nStartFrameIdx, int nEndFrameIdx, int& nFrameCnt, 
 	nHeight = m_pnHeight[nStartFrameIdx];
 	nFrameCnt = nEndFrameIdx - nStartFrameIdx + 1;
 
-	ppsRawImages = new short* [nFrameCnt];
-	for(int i=0; i< nFrameCnt; i++) {
-		copyRawImage(i+nStartFrameIdx, nWidth, nHeight, ppsRawImages[i]);
+	ppsRawImages = new short*[nFrameCnt];
+	for (int i = 0; i < nFrameCnt; i++) {
+		copyRawImage(i + nStartFrameIdx, nWidth, nHeight, ppsRawImages[i]);
 	}
 
 	return true;
 }
 bool CData::copyRawImages(int nGroupIdx, int& nFrameCnt, int& nWidth, int& nHeight, short** &ppsRawImages)
 {
-	if(m_pnFrameIdx == NULL) {
+	if (m_pnFrameIdx == NULL) {
 		return false;
 	}
 
@@ -627,26 +629,28 @@ bool CData::copyRawImages(int nGroupIdx, int& nFrameCnt, int& nWidth, int& nHeig
 	int nStartFrameIdx = -1;
 	int nEndFrameIdx = -1;
 
-	for(int i=0; i< m_nFrameCnt; i++) {
-		if((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
-			if(nStartFrameIdx == -1) {nStartFrameIdx = i;}
+	for (int i = 0; i < m_nFrameCnt; i++) {
+		if ((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
+			if (nStartFrameIdx == -1) { nStartFrameIdx = i; }
 			nEndFrameIdx = i;
 		}
 	}
-	
+
 	return copyRawImages(nStartFrameIdx, nEndFrameIdx, nFrameCnt, nWidth, nHeight, ppsRawImages);
 }
 bool CData::setRawImage(int nFrameIdx, int nWidth, int nHeight, short* psRawImage)
 {
 	// input parameter check //
-	if(psRawImage == NULL) {return false;}
-	if(m_pnFrameIdx == NULL) {return false;}
-	if(m_pnWidth == NULL || m_pnHeight == NULL || m_pnWidth[nFrameIdx] != nWidth || m_pnHeight[nFrameIdx] != nHeight) {return false;}
+	if (psRawImage == NULL) { return false; }
+	if (m_pnFrameIdx == NULL) { return false; }
+	if (m_pnWidth == NULL || m_pnHeight == NULL || m_pnWidth[nFrameIdx] != nWidth || m_pnHeight[nFrameIdx] != nHeight) { return false; }
 
-	for(int row=0; row<nHeight; row++) {
-		for(int col=0; col<nWidth; col++) {
-			int idx = row*nWidth + col;
-			m_ppsRawImage[nFrameIdx][idx] = psRawImage[idx];
+	for (int row = 0; row < nHeight; row++) {
+		for (int col = 0; col < nWidth; col++) 
+		for(int ch =0;ch<3;ch++)
+		{
+			int idx = row*nWidth*3 + col*3;
+			m_ppsRawImage[nFrameIdx][idx+ch] = psRawImage[idx+ch];
 		}
 	}
 
@@ -655,12 +659,12 @@ bool CData::setRawImage(int nFrameIdx, int nWidth, int nHeight, short* psRawImag
 }
 bool CData::setRawImages(int nStartFrameIdx, int nEndFrameIdx, int nWidth, int nHeight, short** ppsRawImages)
 {
-	if(ppsRawImages == NULL) {
+	if (ppsRawImages == NULL) {
 		return false;
 	}
 	int nCount = nEndFrameIdx - nStartFrameIdx + 1;
 
-	for(int i=0; i< nCount; i++) {
+	for (int i = 0; i < nCount; i++) {
 		int idx = nStartFrameIdx + i;
 		setRawImage(idx, nWidth, nHeight, ppsRawImages[i]);
 	}
@@ -674,17 +678,17 @@ unsigned char* CData::getLabelImage(int nFrameIdx)
 bool CData::copyLabelImage(int nFrameIdx, int& nWidth, int& nHeight, unsigned char* &pusLabelImage)
 {
 	// 0. input paremter check
-	if(m_pnFrameIdx == NULL || m_pnFrameIdx[nFrameIdx] == -1) {
+	if (m_pnFrameIdx == NULL || m_pnFrameIdx[nFrameIdx] == -1) {
 		return false;
 	}
-	if(pusLabelImage != NULL) {
+	if (pusLabelImage != NULL) {
 		nWidth = m_pnWidth[nFrameIdx];
 		nHeight = m_pnHeight[nFrameIdx];
 		pusLabelImage = new unsigned char[nWidth*nHeight];
 	}
 
-	for(int row=0; row< nHeight; row++) {
-		for(int col=0; col< nWidth; col++) {
+	for (int row = 0; row < nHeight; row++) {
+		for (int col = 0; col < nWidth; col++) {
 			int idx = row*nWidth + col;
 			pusLabelImage[idx] = m_ppucLabelImage[nFrameIdx][idx];
 		}
@@ -695,13 +699,13 @@ bool CData::copyLabelImage(int nFrameIdx, int& nWidth, int& nHeight, unsigned ch
 bool CData::copyLabelImages(int nStartFrameIdx, int nEndFrameIdx, int& nFrameCnt, int& nWidth, int& nHeight, unsigned char** &ppucLabelImages)
 {
 	// 0. input parameter check
-	if(m_pnFrameIdx == NULL || m_pnFrameIdx[nStartFrameIdx] == -1 || m_pnFrameIdx[nEndFrameIdx] == -1) {
+	if (m_pnFrameIdx == NULL || m_pnFrameIdx[nStartFrameIdx] == -1 || m_pnFrameIdx[nEndFrameIdx] == -1) {
 		return false;
 	}
-	if(ppucLabelImages != NULL) {
+	if (ppucLabelImages != NULL) {
 		return false;
 	}
-	if(nEndFrameIdx < nStartFrameIdx) {
+	if (nEndFrameIdx < nStartFrameIdx) {
 		return false;
 	}
 
@@ -710,16 +714,16 @@ bool CData::copyLabelImages(int nStartFrameIdx, int nEndFrameIdx, int& nFrameCnt
 	nHeight = m_pnHeight[nStartFrameIdx];
 	nFrameCnt = nEndFrameIdx - nStartFrameIdx + 1;
 
-	ppucLabelImages = new unsigned char* [nFrameCnt];
-	for(int i=0; i< nFrameCnt; i++) {
-		copyLabelImage(nStartFrameIdx+i, nWidth, nHeight, ppucLabelImages[i]);
+	ppucLabelImages = new unsigned char*[nFrameCnt];
+	for (int i = 0; i < nFrameCnt; i++) {
+		copyLabelImage(nStartFrameIdx + i, nWidth, nHeight, ppucLabelImages[i]);
 	}
 
 	return true;
 }
 bool CData::copyLabelImages(int nGroupIdx, int& nFrameCnt, int& nWidth, int& nHeight, unsigned char** &ppucLabelImages)
 {
-	if(m_pnFrameIdx == NULL) {
+	if (m_pnFrameIdx == NULL) {
 		return false;
 	}
 
@@ -727,24 +731,24 @@ bool CData::copyLabelImages(int nGroupIdx, int& nFrameCnt, int& nWidth, int& nHe
 	int nStartFrameIdx = -1;
 	int nEndFrameIdx = -1;
 
-	for(int i=0; i< m_nFrameCnt; i++) {
-		if((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
-			if(nStartFrameIdx == -1) {nStartFrameIdx = i;}
+	for (int i = 0; i < m_nFrameCnt; i++) {
+		if ((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
+			if (nStartFrameIdx == -1) { nStartFrameIdx = i; }
 			nEndFrameIdx = i;
 		}
 	}
-	
+
 	return copyLabelImages(nStartFrameIdx, nEndFrameIdx, nFrameCnt, nWidth, nHeight, ppucLabelImages);
 }
 bool CData::setLabelImage(int nFrameIdx, int nWidth, int nHeight, unsigned char* pusLabelImage)
 {
 	// input parameter check //
-	if(pusLabelImage == NULL) {return false;}
-	if(m_pnFrameIdx == NULL) {return false;}
-	if(m_pnWidth == NULL || m_pnHeight == NULL || m_pnWidth[nFrameIdx] != nWidth || m_pnHeight[nFrameIdx] != nHeight) {return false;}
+	if (pusLabelImage == NULL) { return false; }
+	if (m_pnFrameIdx == NULL) { return false; }
+	if (m_pnWidth == NULL || m_pnHeight == NULL || m_pnWidth[nFrameIdx] != nWidth || m_pnHeight[nFrameIdx] != nHeight) { return false; }
 
-	for(int row=0; row<nHeight; row++) {
-		for(int col=0; col<nWidth; col++) {
+	for (int row = 0; row < nHeight; row++) {
+		for (int col = 0; col < nWidth; col++) {
 			int idx = row*nWidth + col;
 			m_ppucLabelImage[nFrameIdx][idx] = pusLabelImage[idx];
 		}
@@ -755,12 +759,12 @@ bool CData::setLabelImage(int nFrameIdx, int nWidth, int nHeight, unsigned char*
 }
 bool CData::setLabelImages(int nStartFrameIdx, int nEndFrameIdx, int nWidth, int nHeight, unsigned char** ppucLabelImages)
 {
-	if(ppucLabelImages == NULL) {
+	if (ppucLabelImages == NULL) {
 		return false;
 	}
 	int nCount = nEndFrameIdx - nStartFrameIdx + 1;
 
-	for(int i=0; i< nCount; i++) {
+	for (int i = 0; i < nCount; i++) {
 		int idx = nStartFrameIdx + i;
 		setLabelImage(idx, nWidth, nHeight, ppucLabelImages[i]);
 	}
@@ -774,17 +778,17 @@ unsigned char* CData::getSelectedImage(int nFrameIdx)
 bool CData::copySelectedImage(int nFrameIdx, int& nWidth, int& nHeight, unsigned char* &pusSelectedImage)
 {
 	// 0. input paremter check
-	if(m_pnFrameIdx == NULL || m_pnFrameIdx[nFrameIdx] == -1) {
+	if (m_pnFrameIdx == NULL || m_pnFrameIdx[nFrameIdx] == -1) {
 		return false;
 	}
-	if(pusSelectedImage != NULL) {
+	if (pusSelectedImage != NULL) {
 		nWidth = m_pnWidth[nFrameIdx];
 		nHeight = m_pnHeight[nFrameIdx];
 		pusSelectedImage = new unsigned char[nWidth*nHeight];
 	}
 
-	for(int row=0; row< nHeight; row++) {
-		for(int col=0; col< nWidth; col++) {
+	for (int row = 0; row < nHeight; row++) {
+		for (int col = 0; col < nWidth; col++) {
 			int idx = row*nWidth + col;
 			pusSelectedImage[idx] = m_ppucSelectedImage[nFrameIdx][idx];
 		}
@@ -795,13 +799,13 @@ bool CData::copySelectedImage(int nFrameIdx, int& nWidth, int& nHeight, unsigned
 bool CData::copySelectedImages(int nStartFrameIdx, int nEndFrameIdx, int& nFrameCnt, int& nWidth, int& nHeight, unsigned char** &ppucSelectedImages)
 {
 	// 0. input parameter check
-	if(m_pnFrameIdx == NULL || m_pnFrameIdx[nStartFrameIdx] == -1 || m_pnFrameIdx[nEndFrameIdx] == -1) {
+	if (m_pnFrameIdx == NULL || m_pnFrameIdx[nStartFrameIdx] == -1 || m_pnFrameIdx[nEndFrameIdx] == -1) {
 		return false;
 	}
-	if(ppucSelectedImages != NULL) {
+	if (ppucSelectedImages != NULL) {
 		return false;
 	}
-	if(nEndFrameIdx < nStartFrameIdx) {
+	if (nEndFrameIdx < nStartFrameIdx) {
 		return false;
 	}
 
@@ -810,16 +814,16 @@ bool CData::copySelectedImages(int nStartFrameIdx, int nEndFrameIdx, int& nFrame
 	nHeight = m_pnHeight[nStartFrameIdx];
 	nFrameCnt = nEndFrameIdx - nStartFrameIdx + 1;
 
-	ppucSelectedImages = new unsigned char* [nFrameCnt];
-	for(int i=0; i< nFrameCnt; i++) {
-		copySelectedImage(nStartFrameIdx+i, nWidth, nHeight, ppucSelectedImages[i]);
+	ppucSelectedImages = new unsigned char*[nFrameCnt];
+	for (int i = 0; i < nFrameCnt; i++) {
+		copySelectedImage(nStartFrameIdx + i, nWidth, nHeight, ppucSelectedImages[i]);
 	}
 
 	return true;
 }
 bool CData::copySelectedImages(int nGroupIdx, int& nFrameCnt, int& nWidth, int& nHeight, unsigned char** &ppucSelectedImages)
 {
-	if(m_pnFrameIdx == NULL) {
+	if (m_pnFrameIdx == NULL) {
 		return false;
 	}
 
@@ -827,28 +831,28 @@ bool CData::copySelectedImages(int nGroupIdx, int& nFrameCnt, int& nWidth, int& 
 	int nStartFrameIdx = -1;
 	int nEndFrameIdx = -1;
 
-	for(int i=0; i< m_nFrameCnt; i++) {
-		if((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
-			if(nStartFrameIdx == -1) {nStartFrameIdx = i;}
+	for (int i = 0; i < m_nFrameCnt; i++) {
+		if ((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
+			if (nStartFrameIdx == -1) { nStartFrameIdx = i; }
 			nEndFrameIdx = i;
 		}
 	}
-	
+
 	return copySelectedImages(nStartFrameIdx, nEndFrameIdx, nFrameCnt, nWidth, nHeight, ppucSelectedImages);
 }
 bool CData::copySelectedImagesInUse(int nStartFrameIdx, int nEndFrameIdx, int& nFrameCnt, int* &pnFrameIdx, int& nWidth, int& nHeight, unsigned char** &ppucSelectedImages)
 {
 	// 0. input parameter check
-	if(m_pnFrameIdx == NULL || m_pnFrameIdx[nStartFrameIdx] == -1 || m_pnFrameIdx[nEndFrameIdx] == -1) {
+	if (m_pnFrameIdx == NULL || m_pnFrameIdx[nStartFrameIdx] == -1 || m_pnFrameIdx[nEndFrameIdx] == -1) {
 		return false;
 	}
-	if(ppucSelectedImages != NULL) {
+	if (ppucSelectedImages != NULL) {
 		return false;
 	}
-	if(pnFrameIdx != NULL) {
+	if (pnFrameIdx != NULL) {
 		return false;
 	}
-	if(nEndFrameIdx < nStartFrameIdx) {
+	if (nEndFrameIdx < nStartFrameIdx) {
 		return false;
 	}
 
@@ -857,33 +861,33 @@ bool CData::copySelectedImagesInUse(int nStartFrameIdx, int nEndFrameIdx, int& n
 
 	vector<int> frameIdxs;
 	bool isUse = false;
-	for(int i=nStartFrameIdx; i< nEndFrameIdx; i++) {
-		for(int row=0; row< nHeight; row++) {
-			for(int col=0; col<nWidth; col++) {
+	for (int i = nStartFrameIdx; i < nEndFrameIdx; i++) {
+		for (int row = 0; row < nHeight; row++) {
+			for (int col = 0; col < nWidth; col++) {
 				int idx = row*nWidth + col;
-				if(m_ppucSelectedImage[i][idx] > 0) {
+				if (m_ppucSelectedImage[i][idx] > 0) {
 					isUse = true;
 					break;
 				}
 			}
-			if(isUse) {break;}
+			if (isUse) { break; }
 		}
-		if(isUse) {
+		if (isUse) {
 			frameIdxs.push_back(i);
 			break;
 		}
 	}
 
 	nFrameCnt = frameIdxs.size();
-	ppucSelectedImages = new unsigned char* [nFrameCnt];
-	if(frameIdxs.size() > 0) {
+	ppucSelectedImages = new unsigned char*[nFrameCnt];
+	if (frameIdxs.size() > 0) {
 		pnFrameIdx = new int[nFrameCnt];
 	}
-	for(int i=0; i< nFrameCnt; i++) {
+	for (int i = 0; i < nFrameCnt; i++) {
 		pnFrameIdx[i] = frameIdxs[i];
 		ppucSelectedImages[i] = new unsigned char[nWidth*nHeight];
-		for(int row=0; row<nHeight; row++) {
-			for(int col=0; col<nWidth; col++) {
+		for (int row = 0; row < nHeight; row++) {
+			for (int col = 0; col < nWidth; col++) {
 				int idx = row*nWidth + col;
 				ppucSelectedImages[i][idx] = m_ppucSelectedImage[frameIdxs[i]][idx];
 			}
@@ -894,7 +898,7 @@ bool CData::copySelectedImagesInUse(int nStartFrameIdx, int nEndFrameIdx, int& n
 }
 bool CData::copySelectedImagesInUse(int nGroupIdx, int& nFrameCnt, int* &pnFrameIdx, int& nWidth, int& nHeight, unsigned char** &ppucSelectedImages)
 {
-	if(m_pnFrameIdx == NULL) {
+	if (m_pnFrameIdx == NULL) {
 		return false;
 	}
 
@@ -902,9 +906,9 @@ bool CData::copySelectedImagesInUse(int nGroupIdx, int& nFrameCnt, int* &pnFrame
 	int nStartFrameIdx = -1;
 	int nEndFrameIdx = -1;
 
-	for(int i=0; i< m_nFrameCnt; i++) {
-		if((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
-			if(nStartFrameIdx == -1) {nStartFrameIdx = i;}
+	for (int i = 0; i < m_nFrameCnt; i++) {
+		if ((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
+			if (nStartFrameIdx == -1) { nStartFrameIdx = i; }
 			nEndFrameIdx = i;
 		}
 	}
@@ -913,12 +917,12 @@ bool CData::copySelectedImagesInUse(int nGroupIdx, int& nFrameCnt, int* &pnFrame
 bool CData::setSelectedImage(int nFrameIdx, int nWidth, int nHeight, unsigned char* pusSelectedImage)
 {
 	// input parameter check //
-	if(pusSelectedImage == NULL) {return false;}
-	if(m_pnFrameIdx == NULL) {return false;}
-	if(m_pnWidth == NULL || m_pnHeight == NULL || m_pnWidth[nFrameIdx] != nWidth || m_pnHeight[nFrameIdx] != nHeight) {return false;}
+	if (pusSelectedImage == NULL) { return false; }
+	if (m_pnFrameIdx == NULL) { return false; }
+	if (m_pnWidth == NULL || m_pnHeight == NULL || m_pnWidth[nFrameIdx] != nWidth || m_pnHeight[nFrameIdx] != nHeight) { return false; }
 
-	for(int row=0; row<nHeight; row++) {
-		for(int col=0; col<nWidth; col++) {
+	for (int row = 0; row < nHeight; row++) {
+		for (int col = 0; col < nWidth; col++) {
 			int idx = row*nWidth + col;
 			m_ppucSelectedImage[nFrameIdx][idx] = pusSelectedImage[idx];
 		}
@@ -929,12 +933,12 @@ bool CData::setSelectedImage(int nFrameIdx, int nWidth, int nHeight, unsigned ch
 }
 bool CData::setSelectedImages(int nStartFrameIdx, int nEndFrameIdx, int nWidth, int nHeight, unsigned char** ppucSelectedImages)
 {
-	if(ppucSelectedImages == NULL) {
+	if (ppucSelectedImages == NULL) {
 		return false;
 	}
 	int nCount = nEndFrameIdx - nStartFrameIdx + 1;
 
-	for(int i=0; i< nCount; i++) {
+	for (int i = 0; i < nCount; i++) {
 		int idx = nStartFrameIdx + i;
 		setSelectedImage(idx, nWidth, nHeight, ppucSelectedImages[i]);
 	}
@@ -955,9 +959,9 @@ int CData::getGroupStartFrameIdx(int nGroupIdx)
 	int nStartFrameIdx = -1;
 	int nEndFrameIdx = -1;
 
-	for(int i=0; i< m_nFrameCnt; i++) {
-		if((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
-			if(nStartFrameIdx == -1) {nStartFrameIdx = i;}
+	for (int i = 0; i < m_nFrameCnt; i++) {
+		if ((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
+			if (nStartFrameIdx == -1) { nStartFrameIdx = i; }
 			nEndFrameIdx = i;
 		}
 	}
@@ -970,9 +974,9 @@ int CData::getGroupEndFrameIdx(int nGroupIdx)
 	int nStartFrameIdx = -1;
 	int nEndFrameIdx = -1;
 
-	for(int i=0; i< m_nFrameCnt; i++) {
-		if((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
-			if(nStartFrameIdx == -1) {nStartFrameIdx = i;}
+	for (int i = 0; i < m_nFrameCnt; i++) {
+		if ((m_pnFrameIdx[i] != -1) && (m_pnFrameGroupIdx[i] == nGroupIdx)) {
+			if (nStartFrameIdx == -1) { nStartFrameIdx = i; }
 			nEndFrameIdx = i;
 		}
 	}
@@ -983,27 +987,27 @@ int CData::getGroupEndFrameIdx(int nGroupIdx)
 // private //
 void CData::resizeDataArray(int nDataCnt)
 {
-	if(nDataCnt > m_nFrameCnt) {
+	if (nDataCnt > m_nFrameCnt) {
 		int* pnFrameIdxNew = new int[nDataCnt];
 		int* pnFrameMemoryIdxNew = new int[nDataCnt];
 		int* pnFrameGroupIdxNew = new int[nDataCnt];
-		char** ppcPatientNameNew = new char* [nDataCnt];
-		char** ppcInstitutionNameNew = new char* [nDataCnt];
-		char** ppcSeriesDateNew = new char* [nDataCnt];
-		char** ppcManufacturerModelNameNew = new char* [nDataCnt];
-		char** ppcModalityNew = new char* [nDataCnt];
-		float* pfPixelSpacingNew = new float [nDataCnt];
-		float* pfSliceThicknessNew = new float [nDataCnt];
-		int* pnInstanceNumberNew = new int [nDataCnt];
-		int* pnRowsNew = new int [nDataCnt];
-		int* pnColsNew = new int [nDataCnt];
+		char** ppcPatientNameNew = new char*[nDataCnt];
+		char** ppcInstitutionNameNew = new char*[nDataCnt];
+		char** ppcSeriesDateNew = new char*[nDataCnt];
+		char** ppcManufacturerModelNameNew = new char*[nDataCnt];
+		char** ppcModalityNew = new char*[nDataCnt];
+		float* pfPixelSpacingNew = new float[nDataCnt];
+		float* pfSliceThicknessNew = new float[nDataCnt];
+		int* pnInstanceNumberNew = new int[nDataCnt];
+		int* pnRowsNew = new int[nDataCnt];
+		int* pnColsNew = new int[nDataCnt];
 
-		short** ppsRawImageNew = new short* [nDataCnt];
-		unsigned char** ppsRawLabelImageNew = new unsigned char* [nDataCnt];
-		unsigned char** ppsRawSelectedImageNew = new unsigned char* [nDataCnt];
+		short** ppsRawImageNew = new short*[nDataCnt];
+		unsigned char** ppsRawLabelImageNew = new unsigned char*[nDataCnt];
+		unsigned char** ppsRawSelectedImageNew = new unsigned char*[nDataCnt];
 
 		// new data copy
-		for(int i=0; i< m_nFrameCnt; i++) {
+		for (int i = 0; i < m_nFrameCnt; i++) {
 			pnFrameIdxNew[i] = m_pnFrameIdx[i];
 			pnFrameMemoryIdxNew[i] = m_pnFrameMemoryIdx[i];
 			pnFrameGroupIdxNew[i] = m_pnFrameGroupIdx[i];
@@ -1021,7 +1025,7 @@ void CData::resizeDataArray(int nDataCnt)
 			ppsRawLabelImageNew[i] = m_ppucLabelImage[i];
 			ppsRawSelectedImageNew[i] = m_ppucSelectedImage[i];
 		}
-		for(int i=m_nFrameCnt; i< nDataCnt; i++) {
+		for (int i = m_nFrameCnt; i < nDataCnt; i++) {
 			pnFrameIdxNew[i] = -1;
 			pnFrameMemoryIdxNew[i] = -1;
 			pnFrameGroupIdxNew[i] = -1;
@@ -1039,7 +1043,7 @@ void CData::resizeDataArray(int nDataCnt)
 			ppsRawLabelImageNew[i] = NULL;
 			ppsRawSelectedImageNew[i] = NULL;
 		}
-		
+
 		// old data delete
 		SAFE_DELETE_ARRAY(m_pnFrameIdx);
 		SAFE_DELETE_ARRAY(m_pnFrameMemoryIdx);
@@ -1081,17 +1085,17 @@ void CData::resizeDataArray(int nDataCnt)
 }
 void CData::resizeGroupArray(int nGroupCnt)
 {
-	if(nGroupCnt > m_nGroupCnt) {
-		int* pnGroupIdxNew = new int[nGroupCnt];					
-		char** ppcGroupPatientNameNew = new char* [nGroupCnt];
-		char** ppcGroupSeriesDateNew = new char* [nGroupCnt];
+	if (nGroupCnt > m_nGroupCnt) {
+		int* pnGroupIdxNew = new int[nGroupCnt];
+		char** ppcGroupPatientNameNew = new char*[nGroupCnt];
+		char** ppcGroupSeriesDateNew = new char*[nGroupCnt];
 
-		for(int i=0; i< m_nGroupCnt; i++) {
+		for (int i = 0; i < m_nGroupCnt; i++) {
 			pnGroupIdxNew[i] = m_pnGroupIdx[i];
 			ppcGroupPatientNameNew[i] = m_ppcGroupPatientName[i];
 			ppcGroupSeriesDateNew[i] = m_ppcGroupSeriesDate[i];
 		}
-		for(int i=m_nGroupCnt; i< nGroupCnt; i++) {
+		for (int i = m_nGroupCnt; i < nGroupCnt; i++) {
 			pnGroupIdxNew[i] = -1;
 			ppcGroupPatientNameNew[i] = NULL;
 			ppcGroupSeriesDateNew[i] = NULL;
@@ -1113,8 +1117,8 @@ void CData::resizeGroupArray(int nGroupCnt)
 bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRawImage, unsigned char* &psRawLabelImage, unsigned char* &psRawSelectedImage, bool bMakeNewArray)
 {
 	// 0. input parameter 예외처리
-	if(bMakeNewArray) {
-		if(psRawImage != NULL || psRawLabelImage != NULL || psRawSelectedImage != NULL) {
+	if (bMakeNewArray) {
+		if (psRawImage != NULL || psRawLabelImage != NULL || psRawSelectedImage != NULL) {
 			return false;
 		}
 	}
@@ -1123,14 +1127,14 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 	int nImageWidth = 0;
 	int nImageHeight = 0;
 
-	if(strcmp(getFileExtension(pcImagePath), "dcm") == 0) {
+	if (strcmp(getFileExtension(pcImagePath), "dcm") == 0) {
 		DcmFileFormat *fileformat = new DcmFileFormat();
 		fileformat->loadFile(pcImagePath);
 
 		OFCondition status = fileformat->getDataset()->chooseRepresentation(EXS_LittleEndianExplicit, NULL);
-		if (!status.good()) 
+		if (!status.good())
 		{
-			std::cerr << "DCMTK error: " << status.text() << std::endl; 
+			std::cerr << "DCMTK error: " << status.text() << std::endl;
 			delete fileformat;
 		}
 
@@ -1143,8 +1147,8 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 		nImageHeight = atoi(OFStrColumns.c_str());
 
 		// image
-		unsigned long count; 
-		const Uint16 *pixelData; 
+		unsigned long count;
+		const Uint16 *pixelData;
 		status = fileformat->getDataset()->findAndGetUint16Array(DCM_PixelData, pixelData, &count, OFTrue);
 
 		// -3024 범위를 -1024~ 범위로 변경
@@ -1152,27 +1156,27 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 
 		int nMin = INT_MAX;
 		int nMax = INT_MIN;
-		for(int i=0; i< nImageWidth*nImageHeight; i++) {
-			if(pixelData[i] < nMin) {
+		for (int i = 0; i < nImageWidth*nImageHeight; i++) {
+			if (pixelData[i] < nMin) {
 				nMin = pixelData[i];
 			}
-			if(pixelData[i] > nMax) {
+			if (pixelData[i] > nMax) {
 				nMax = pixelData[i];
 			}
 
 			ucCopyPixelData[i] = pixelData[i];
 		}
-	
-		if(nMax > 10000)
+
+		if (nMax > 10000)
 		{
 			int* piPixelData = new int[nImageWidth * nImageHeight];
 
-			for(int i=0; i<nImageHeight; i++)
+			for (int i = 0; i < nImageHeight; i++)
 			{
-				for(int j=0; j<nImageWidth; j++)
+				for (int j = 0; j < nImageWidth; j++)
 				{
 					int iIdx = i*nImageWidth + j;
-					if(ucCopyPixelData[iIdx] > 10000)
+					if (ucCopyPixelData[iIdx] > 10000)
 						piPixelData[iIdx] = ucCopyPixelData[iIdx] - 65536;
 					else
 						piPixelData[iIdx] = ucCopyPixelData[iIdx];
@@ -1180,59 +1184,59 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 			}
 
 			int iTempMin = 99999, iTempMax = -99999;
-			for(int i=0; i<nImageHeight; i++)
+			for (int i = 0; i < nImageHeight; i++)
 			{
-				for(int j=0; j<nImageWidth; j++)
+				for (int j = 0; j < nImageWidth; j++)
 				{
 					int iIdx = i*nImageWidth + j;
 
-					if(piPixelData[iIdx] > iTempMax)
+					if (piPixelData[iIdx] > iTempMax)
 						iTempMax = piPixelData[iIdx];
-					if(piPixelData[iIdx] < iTempMin)
+					if (piPixelData[iIdx] < iTempMin)
 						iTempMin = piPixelData[iIdx];
 				}
 			}
 
-			if(iTempMin < 0)
+			if (iTempMin < 0)
 			{
 				iTempMin *= -1;
-				for(int i=0; i<nImageHeight; i++)
+				for (int i = 0; i < nImageHeight; i++)
 				{
-					for(int j=0; j<nImageWidth; j++)
+					for (int j = 0; j < nImageWidth; j++)
 					{
 						int iIdx = i*nImageWidth + j;
 						int iTempVal = piPixelData[iIdx] + iTempMin;
-						if(iTempVal > 4095)
+						if (iTempVal > 4095)
 							iTempVal = 4095;
 
 						// 데이터와 intensity 범위를 맞추기 위한 값 보정
 						iTempVal -= 2000;
-						if(iTempVal < 0)
+						if (iTempVal < 0)
 							iTempVal = 0;
 
 						ucCopyPixelData[iIdx] = (unsigned short)iTempVal;
 					}
 				}
 			}
-      
-			delete [] piPixelData;
+
+			delete[] piPixelData;
 		}
 		else
 		{
-			for(int i=0; i<nImageHeight; i++)
+			for (int i = 0; i < nImageHeight; i++)
 			{
-				for(int j=0; j<nImageWidth; j++)
+				for (int j = 0; j < nImageWidth; j++)
 				{
 					int iIdx = i*nImageWidth + j;
 
-					if(ucCopyPixelData[iIdx]>=4096 && ucCopyPixelData[iIdx]<=5000)
+					if (ucCopyPixelData[iIdx] >= 4096 && ucCopyPixelData[iIdx] <= 5000)
 						ucCopyPixelData[iIdx] = 4095;
 				}
 			}
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////
-		if(bMakeNewArray) {
+		if (bMakeNewArray) {
 			nWidth = nImageWidth;
 			nHeight = nImageHeight;
 			psRawImage = new short[nWidth*nHeight];
@@ -1240,7 +1244,7 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 			psRawSelectedImage = new unsigned char[nWidth*nHeight];
 		}
 		else {
-			if((nWidth != nImageWidth) || (nHeight != nImageHeight) || (psRawImage == NULL)) {
+			if ((nWidth != nImageWidth) || (nHeight != nImageHeight) || (psRawImage == NULL)) {
 				SAFE_DELETE_ARRAY(psRawImage);
 				SAFE_DELETE_ARRAY(psRawLabelImage);
 				SAFE_DELETE_ARRAY(psRawSelectedImage);
@@ -1253,8 +1257,8 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 			}
 		}
 
-		for(int row=0; row<nHeight; row++) {
-			for(int col=0; col<nWidth; col++) {
+		for (int row = 0; row < nHeight; row++) {
+			for (int col = 0; col < nWidth; col++) {
 				int index = row*nWidth + col;
 				psRawImage[index] = ucCopyPixelData[index];
 				psRawLabelImage[index] = 0;
@@ -1268,7 +1272,7 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 		delete fileformat;
 		SAFE_DELETE_ARRAY(ucCopyPixelData);
 	}
-	else if(strcmp(getFileExtension(pcImagePath), "jpg") == 0 || strcmp(getFileExtension(pcImagePath), "png") == 0) {
+	/*else if(strcmp(getFileExtension(pcImagePath), "jpg") == 0 || strcmp(getFileExtension(pcImagePath), "png") == 0) {
 		IplImage* image = cvLoadImage(pcImagePath, 0);
 		nImageWidth = image->width;
 		nImageHeight = image->height;
@@ -1305,6 +1309,64 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 		}
 
 		cvReleaseImage(&image);
+	}*/
+	else if (strcmp(getFileExtension(pcImagePath), "jpg") == 0 || strcmp(getFileExtension(pcImagePath), "png") == 0) {
+		IplImage* image = cvLoadImage(pcImagePath, 1);
+		nImageWidth = image->width;
+		nImageHeight = image->height;
+
+		if (bMakeNewArray) {
+			nWidth = nImageWidth;
+			nHeight = nImageHeight;
+			psRawImage = new short[image->widthStep*nHeight];
+			psRawLabelImage = new unsigned char[nWidth*nHeight];
+			psRawSelectedImage = new unsigned char[nWidth*nHeight];
+		}
+		else {
+			if ((nWidth != nImageWidth) || (nHeight != nImageHeight) || (psRawImage == NULL)) {
+				SAFE_DELETE_ARRAY(psRawImage);
+				SAFE_DELETE_ARRAY(psRawLabelImage);
+				SAFE_DELETE_ARRAY(psRawSelectedImage);
+
+				nWidth = nImageWidth;
+				nHeight = nImageHeight;
+				psRawImage = new short[image->widthStep*nHeight];
+				psRawLabelImage = new unsigned char[nWidth*nHeight];
+				psRawSelectedImage = new unsigned char[nWidth*nHeight];
+			}
+		}
+
+		for (int row = 0; row < nHeight; row++) {
+			for (int col = 0; col < nWidth; col++) {
+				int index = row*image->widthStep + col *image->nChannels;
+				for (int ch = 0; ch < 3; ch++)
+				{
+					unsigned char value = (unsigned char)image->imageData[index + ch];
+					psRawImage[index+ch] = value;
+
+				}
+				psRawLabelImage[row*nWidth + col] = 0;
+				psRawSelectedImage[row*nWidth + col] = 0;
+
+			}
+		}
+
+		unsigned char * tempimg = new unsigned char[image->widthStep*nHeight];
+
+		for (int row = 0; row < nHeight; row++)
+			for (int col = 0; col < nWidth; col++)
+			{
+				int index = row*nWidth*3 + col*image->nChannels;
+				for (int ch = 0; ch < 3; ch++)
+				{
+					tempimg[index + ch] = image->imageData[index + ch];
+				}
+			}
+
+
+		cv::Mat tt(nHeight, nWidth, CV_8UC3, tempimg);
+
+		cvReleaseImage(&image);
 	}
 	else {
 		QMessageBox msgBox;
@@ -1317,35 +1379,35 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 
 	return true;
 }
-char* CData::getFileExtension (char* pcFileName)
-{ 
-     int file_name_len = strlen (pcFileName); 
-     pcFileName +=file_name_len ;
- 
-     char *file_ext ;
-     for(int i =0 ; i <file_name_len ; i ++)
-     {
-            if(* pcFileName == '.' )
-            {
-                file_ext = pcFileName +1 ;
-                 break;
-            } 
-           pcFileName --;
-     } 
-     return file_ext ;
+char* CData::getFileExtension(char* pcFileName)
+{
+	int file_name_len = strlen(pcFileName);
+	pcFileName += file_name_len;
+
+	char *file_ext;
+	for (int i = 0; i < file_name_len; i++)
+	{
+		if (*pcFileName == '.')
+		{
+			file_ext = pcFileName + 1;
+			break;
+		}
+		pcFileName--;
+	}
+	return file_ext;
 }
 char* CData::getFileName(char* pcFilePath)
 {
-    char *file_name;
- 
-    while(*pcFilePath)
-    {
-        if(*pcFilePath == '/' && (pcFilePath +1) != NULL )
-        {
-            file_name = pcFilePath+1;
-        }
-  
-        pcFilePath++; //mv pointer       
-    } 
-    return file_name;
+	char *file_name;
+
+	while (*pcFilePath)
+	{
+		if (*pcFilePath == '/' && (pcFilePath + 1) != NULL)
+		{
+			file_name = pcFilePath + 1;
+		}
+
+		pcFilePath++; //mv pointer       
+	}
+	return file_name;
 }
