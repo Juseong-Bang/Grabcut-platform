@@ -237,6 +237,8 @@ void CPlatform::resizeEvent(QResizeEvent* event)
 		}
 
 		m_ciImage->setImageScreenSize(nWidth, nHeight);
+
+
 	}
 }
 
@@ -302,16 +304,27 @@ void CPlatform::dropEvent(QDropEvent* event)
 void CPlatform::keyPressEvent(QKeyEvent* event)
 {
 	switch (event->key()) {
-	case Qt::Key_Control:
-
+	case Qt::Key_F8:
+		run();
 		break;
+	case Qt::Key_Shift:
+		m_ciImage->shift_key = true;
+		break;
+	case Qt::Key_Control:
+		m_ciImage->ctrl_key = true;
+		break;
+
 	}
+
 }
 void CPlatform::keyReleaseEvent(QKeyEvent* event)
 {
 	switch (event->key()) {
+	case Qt::Key_Shift:
+		m_ciImage->shift_key = false;
+		break;
 	case Qt::Key_Control:
-
+		m_ciImage->ctrl_key = false;
 		break;
 	}
 }
@@ -349,7 +362,7 @@ void CPlatform::showImage(int nFrameIdx)
 	unsigned char* psSelectedImage = m_ciData.getSelectedImage(nFrameIdx);
 	int nWidth = m_ciData.getWidth(nFrameIdx);
 	int nHeight = m_ciData.getHeight(nFrameIdx);
-
+	stat = false;
 	// 처음 Data를 로드하는 경우
 	if (m_ciImage == NULL) {
 		m_ciImage = new CImage;
@@ -361,6 +374,7 @@ void CPlatform::showImage(int nFrameIdx)
 
 		ui.gridLayout_2->removeWidget(ui.frame);
 		ui.gridLayout_2->addWidget(m_ciImage, 0, 0);
+
 	}
 	else {
 		m_ciImage->init(this);
@@ -409,42 +423,64 @@ void CPlatform::run()
 	int nHeight = 0;
 	short* pusImage = NULL;
 	unsigned char* pucImage = NULL;
+
 	int xst = qpoints.front().x();
 	int xed = qpoints.last().x();
 	int yst = qpoints.front().y();
 	int yed = qpoints.last().y();
 
-	cv::Mat msk(nHeight, nWidth, CV_8UC1);
-	cv::Mat bg(nHeight, nWidth, CV_8UC1);
-	cv::Mat fg(nHeight, nWidth, CV_8UC1);
-	cv::Rect roi(cv::Point2i(xst, yst), cv::Point2i(xed, yed));
+
+
+	if (stat == false) {
+		roi = cv::Rect(cv::Point2i(xst, yst), cv::Point2i(xed, yed));
+		mask = cv::Mat(nWidth, nHeight, CV_8UC1);
+		bg = cv::Mat(nHeight, nWidth, CV_8UC1);
+		fg = cv::Mat(nHeight, nWidth, CV_8UC1);
+	}
 
 	m_ciData.copyRawImage(0, nWidth, nHeight, pusImage);
-	
-	pucImage = new unsigned char[nWidth * nHeight*3];
+
+	pucImage = new unsigned char[nWidth * nHeight * 3];
 	memset(pucImage, 0, sizeof(unsigned char) * nWidth * nHeight);
 
 	// sample code
 	for (int row = 0; row < nHeight; row++) {
-		for (int col = 0; col < nWidth; col++) 
-		for(int ch =0 ;ch<3 ;ch++)
-		{
-			int index = row*nWidth*3 + col*3;
-			pucImage[index+ch] = pusImage[index+ch];
-		}
+		for (int col = 0; col < nWidth; col++)
+			for (int ch = 0; ch < 3; ch++)
+			{
+				int index = row*nWidth * 3 + col * 3;
+				pucImage[index + ch] = pusImage[index + ch];
+			}
 	}
 	cv::Mat image(nHeight, nWidth, CV_8UC3, pucImage);
-	
+
 	cv::Mat foreground(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 	cv::Mat background(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 
-//	cv::cvtColor(image, RGBimg, CV_GRAY2RGB);
-	cv::grabCut(image, msk, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
-	cv::compare(msk, cv::GC_PR_FGD, msk, cv::CMP_EQ);
-	cv::rectangle(image, roi, cv::Scalar(255, 255, 255), 1);
+	//	cv::cvtColor(image, RGBimg, CV_GRAY2RGB);
+	if (stat == false) {
+		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
+		stat = true;
+	}
+	else {
 
-	image.copyTo(foreground, msk);
-	image.copyTo(background, ~msk);
+	cv::Mat	bbg = cv::Mat(m_ciImage->m_bg_mask.height(), m_ciImage->m_bg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_bg_mask.bits()), m_ciImage->m_bg_mask.bytesPerLine());
+	cv::Mat	ffg = cv::Mat(m_ciImage->m_fg_mask.height(), m_ciImage->m_fg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_fg_mask.bits()), m_ciImage->m_fg_mask.bytesPerLine());
+		cv::cvtColor(bbg, bbg, CV_RGB2GRAY);
+		cv::cvtColor(ffg, ffg, CV_RGB2GRAY);
+		cv::threshold(bbg, bbg, 125, 255, cv::THRESH_BINARY);
+		cv::threshold(ffg, ffg, 125, 255, cv::THRESH_BINARY);
+		mask |= ~ffg;
+		mask &= bbg;
+
+		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
+	}
+
+	cv::compare(mask, cv::GC_PR_FGD, mask, cv::CMP_EQ);
+	cv::rectangle(image, roi, cv::Scalar(255, 255, 255), 1);
+	mask;
+	image.copyTo(foreground, mask);
+	image.copyTo(background, ~mask);
 
 	cv::imshow("image", image);
 	cv::imshow("Foreground", foreground);

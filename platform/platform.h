@@ -49,8 +49,12 @@ public:
 	CImage* m_ciImage;					// image
 	CData m_ciData;						// data
 	int m_nActivatedFrameIdx;			// 현재 화면에 가시화된 Frame 번호
-
-// QT layout, action 변수
+	bool stat; //iter 여부 
+	cv::Rect roi;
+	cv::Mat mask;// 마스크
+	cv::Mat bg;
+	cv::Mat fg;
+	// QT layout, action 변수
 public:
 	// layout
 	Ui::platformClass ui;
@@ -58,7 +62,7 @@ public:
 	QMenu* fileMenu;
 	QAction* newFileAction;
 	QProgressBar* progressBar;
-
+	
 	void createProgressBar();
 	void setSignalSlot();
 	void setProgressBarValue(int nCurrentIdx, int nMaximumIdx);

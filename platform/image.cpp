@@ -11,7 +11,7 @@ CImage::CImage(QWidget* parent)
 	m_qImageScreenDrawingPosition->setObjectName(QStringLiteral("label"));
 	m_qImageScreenDrawingPosition->setGeometry(QRect(0, 0, 512, 512));
 	m_qImageScreenDrawingPosition->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
-	m_qImageScreenDrawingPosition->setMouseTracking(true);
+	//	m_qImageScreenDrawingPosition->setMouseTracking(true);
 
 	init();
 }
@@ -32,8 +32,12 @@ void CImage::init()
 	m_nImageScreenHeight = 628;
 
 	// mouse
+	scribbling = false;
 	m_bLMouseDown = false;
 	m_bRMouseDown = false;
+	ctrl_key = false;
+	shift_key = false;
+
 }
 void CImage::init(CPlatform* parent)
 {
@@ -45,7 +49,8 @@ void CImage::init(CPlatform* parent)
 	int nHeight = m_parent->m_ciData.getHeight(m_nActivatedFrameIdx);
 	if (nWidth != m_nImageWidth || nHeight != m_nImageHeight) {
 		m_qImage = QImage(nWidth, nHeight, QImage::Format_RGB32);
-
+		m_fg_mask = QImage(nWidth, nHeight, QImage::Format_RGB32);
+		m_bg_mask = QImage(nWidth, nHeight, QImage::Format_RGB32);
 		SAFE_DELETE_ARRAY(m_pucImage);
 
 		m_nImageWidth = nWidth;
@@ -53,7 +58,6 @@ void CImage::init(CPlatform* parent)
 		short* psImage = m_parent->m_ciData.getRawImage(m_nActivatedFrameIdx);
 
 		normalizeImage(psImage, nWidth, nHeight, m_pucImage);
-		cv::Mat test(nHeight, nWidth, CV_8UC3, m_pucImage);
 	}
 
 	// mouse
@@ -94,6 +98,7 @@ void CImage::setImageScreenSize(int nScreenWidth, int nScreenHeight)
 			m_qImage.setPixel(col, row, qRgb(value, value, value));
 		}
 	}
+	
 	m_nImageScreenWidth = nScreenWidth;
 	m_nImageScreenHeight = nScreenHeight;
 
@@ -218,9 +223,7 @@ void CImage::redraw(bool isMouseMove)
 
 	// 기본 이미지, Label 이미지, Selected Region
 
-
-	cv::Mat test(m_nImageHeight, m_nImageWidth, CV_8UC3, m_pucImage);
-
+	
 	if (isMouseMove == false) {
 		// 기본 XA 영상 (0~255로 정규화)
 		int value[3];
@@ -230,7 +233,7 @@ void CImage::redraw(bool isMouseMove)
 			{
 				for (int ch = 0; ch < 3; ch++)
 				{
-					int index = row*m_nImageWidth*3 + col * 3 + ch;
+					int index = row*m_nImageWidth * 3 + col * 3 + ch;
 					value[ch] = m_pucImage[index];
 				}
 				m_qImage.setPixel(col, row, qRgb(value[2], value[1], value[0]));
@@ -239,13 +242,43 @@ void CImage::redraw(bool isMouseMove)
 		// scaling
 		m_qImageScreen = m_qImage.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 	}
+	else {
+	}
+
+
+}
+// Event //
+void CImage::drawLineTo(const QPoint &endPoint)
+{
+	if (shift_key) {
+		QPainter painter(&m_fg_mask);
+
+		painter.setPen(QPen(Qt::blue, 2, Qt::SolidLine, Qt::RoundCap,
+			Qt::RoundJoin));
+		painter.drawLine(lastPoint, endPoint);
+
+		int rad = 1;
+
+		update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
+		lastPoint = endPoint;
+	}
+	else if (ctrl_key) {
+		QPainter painter(&m_bg_mask);
+
+		painter.setPen(QPen(Qt::red, 2, Qt::SolidLine, Qt::RoundCap,
+			Qt::RoundJoin));
+		painter.drawLine(lastPoint, endPoint);
+
+		int rad = 1;
+
+		update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
+		lastPoint = endPoint;
+	}
+	
 }
 
-// Event //
 void CImage::mousePressEvent(QMouseEvent* event)
 {
-	Q_UNUSED(event);
-
 	int nMouseX = ((event->x() / (float)m_nImageScreenWidth * (float)m_nImageWidth) + 0.5);
 	int nMouseY = ((event->y() / (float)m_nImageScreenHeight * (float)m_nImageHeight) + 0.5);
 
@@ -260,15 +293,14 @@ void CImage::mousePressEvent(QMouseEvent* event)
 		}
 	}
 	else if (event->button() == Qt::RightButton) {
-
+		lastPoint = event->pos();
+		scribbling = true;
 	}
 
 	redraw(false);
 }
 void CImage::mouseMoveEvent(QMouseEvent* event)
 {
-	Q_UNUSED(event);
-
 	int nMouseX = ((event->x() / (float)m_nImageScreenWidth * (float)m_nImageWidth) + 0.5);
 	int nMouseY = ((event->y() / (float)m_nImageScreenHeight * (float)m_nImageHeight) + 0.5);
 
@@ -279,6 +311,9 @@ void CImage::mouseMoveEvent(QMouseEvent* event)
 			m_qpMouseTrackingPoints.push_back(m_qpMousePoint);
 			redraw(true);
 		}
+		else if (scribbling && (event->buttons() & Qt::RightButton)) {
+			drawLineTo(event->pos());
+		}
 	}
 	else {
 
@@ -286,8 +321,6 @@ void CImage::mouseMoveEvent(QMouseEvent* event)
 }
 void CImage::mouseReleaseEvent(QMouseEvent* event)
 {
-	Q_UNUSED(event);
-
 	int nMouseX = ((event->x() / (float)m_nImageScreenWidth * (float)m_nImageWidth) + 0.5);
 	int nMouseY = ((event->y() / (float)m_nImageScreenHeight * (float)m_nImageHeight) + 0.5);
 	//qDebug("mouse up event(%d, %d)", nMouseX, nMouseY);
@@ -301,8 +334,9 @@ void CImage::mouseReleaseEvent(QMouseEvent* event)
 			//m_qpMouseTrackingPoints.clear();
 		}
 	}
-	else if (event->button() == Qt::RightButton) {
-		m_bRMouseDown = false;
+	else if (event->button() == Qt::RightButton && scribbling) {
+		drawLineTo(event->pos());
+		scribbling = false;
 	}
 
 	redraw(false);
@@ -317,10 +351,13 @@ void CImage::wheelEvent(QWheelEvent* event)
 }
 void CImage::paintEvent(QPaintEvent* event)
 {
-	Q_UNUSED(event);
-
-	if (m_nImageWidth > 0) {
-		QPixmap p = QPixmap::fromImage(m_qImageScreen);
-		m_qImageScreenDrawingPosition->setPixmap(p);
-	}
+	QPainter painter(this);
+	QRect dirtyRect = event->rect();
+	
+	if (shift_key)
+		painter.drawImage(dirtyRect, m_fg_mask, dirtyRect);
+	else if (ctrl_key)
+		painter.drawImage(dirtyRect, m_bg_mask, dirtyRect);
+	else
+		painter.drawImage(dirtyRect, m_qImage, dirtyRect);
 }

@@ -11,13 +11,13 @@
 using namespace std;
 
 class CPlatform;
-class CImage: public QWidget
+class CImage : public QWidget
 {
 	Q_OBJECT
 
-// 생성자, 소멸자, 초기화
+		// 생성자, 소멸자, 초기화
 public:
-	CImage(QWidget *parent=0);
+	CImage(QWidget *parent = 0);
 	~CImage();
 	void init(void);
 	void init(CPlatform* parent);
@@ -25,20 +25,29 @@ public:
 
 	void setParent(CPlatform* parent);
 	void redraw(bool isMouseMove);
+	void drawLineTo(const QPoint &endPoint);
 	bool setImage(unsigned char* pusImage, int nWidth, int nHeight);
 	void setImageScreenSize(int nScreenWidth, int nScreenHeight);
+	bool scribbling; //pen 사용
+	bool ctrl_key;
+	bool shift_key;
+	QImage m_fg_mask; //foreground mask
+	QImage m_bg_mask; //background mask
 
 	unsigned char* m_pucImage;						// image (scale 전)
 	int m_nImageWidth;								// image 가로 (scale 전)
 	int m_nImageHeight;								// image 세로 (scale 전)
-
+	QPoint lastPoint;
 	QPoint getMousePoint(void);						// mouse point (마지막으로 클릭한 좌표)
 	QVector<QPoint> getMousePoints(void);			// mouse points (마우스 누른채로 움직였던 좌표들)
+	QPixmap m_pixmap;
 
 private:
 	CPlatform* m_parent;
 	QLabel* m_qImageScreenDrawingPosition;			// 화면 image 위치 (Layout 디자인에 맞도록 자동조절)
 	QImage m_qImageScreen;							// 화면 image (scale 후)
+
+
 	int m_nImageScreenWidth;						// 화면 image 가로 (scale 후)
 	int m_nImageScreenHeight;						// 화면 image 세로 (scale 후)
 
@@ -60,6 +69,7 @@ private:
 	void normalizeImage(short* psInImage, int nWidth, int nHeight, unsigned char* &pucOutImage);
 	bool checkImageRange(int nX, int nY, int nMargin);
 	void setSignalSlot();
+
 
 protected:
 	void paintEvent(QPaintEvent* event);

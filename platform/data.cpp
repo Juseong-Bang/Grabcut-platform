@@ -580,16 +580,16 @@ bool CData::copyRawImage(int nFrameIdx, int& nWidth, int& nHeight, short* &psRaw
 	if (psRawImage == NULL) {
 		nWidth = m_pnWidth[nFrameIdx];
 		nHeight = m_pnHeight[nFrameIdx];
-		psRawImage = new short[nWidth*nHeight*3];
+		psRawImage = new short[nWidth*nHeight * 3];
 	}
 
 	for (int row = 0; row < nHeight; row++) {
-		for (int col = 0; col < nWidth; col++) 
-		for(int ch=0;ch<3;ch++)
-		{
-			int idx = row*nWidth*3 + col*3;
-			psRawImage[idx+ch] = m_ppsRawImage[nFrameIdx][idx+ch];
-		}
+		for (int col = 0; col < nWidth; col++)
+			for (int ch = 0; ch < 3; ch++)
+			{
+				int idx = row*nWidth * 3 + col * 3;
+				psRawImage[idx + ch] = m_ppsRawImage[nFrameIdx][idx + ch];
+			}
 	}
 
 	return true;
@@ -646,12 +646,12 @@ bool CData::setRawImage(int nFrameIdx, int nWidth, int nHeight, short* psRawImag
 	if (m_pnWidth == NULL || m_pnHeight == NULL || m_pnWidth[nFrameIdx] != nWidth || m_pnHeight[nFrameIdx] != nHeight) { return false; }
 
 	for (int row = 0; row < nHeight; row++) {
-		for (int col = 0; col < nWidth; col++) 
-		for(int ch =0;ch<3;ch++)
-		{
-			int idx = row*nWidth*3 + col*3;
-			m_ppsRawImage[nFrameIdx][idx+ch] = psRawImage[idx+ch];
-		}
+		for (int col = 0; col < nWidth; col++)
+			for (int ch = 0; ch < 3; ch++)
+			{
+				int idx = row*nWidth * 3 + col * 3;
+				m_ppsRawImage[nFrameIdx][idx + ch] = psRawImage[idx + ch];
+			}
 	}
 
 	return true;
@@ -1342,7 +1342,7 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 				for (int ch = 0; ch < 3; ch++)
 				{
 					unsigned char value = (unsigned char)image->imageData[index + ch];
-					psRawImage[index+ch] = value;
+					psRawImage[index + ch] = value;
 
 				}
 				psRawLabelImage[row*nWidth + col] = 0;
@@ -1351,17 +1351,17 @@ bool CData::readImage(char* pcImagePath, int& nWidth, int& nHeight, short* &psRa
 			}
 		}
 
+
 		unsigned char * tempimg = new unsigned char[image->widthStep*nHeight];
 
 		for (int row = 0; row < nHeight; row++)
 			for (int col = 0; col < nWidth; col++)
-			{
-				int index = row*nWidth*3 + col*image->nChannels;
 				for (int ch = 0; ch < 3; ch++)
 				{
+					int index = row*image->widthStep + col*image->nChannels;
+
 					tempimg[index + ch] = image->imageData[index + ch];
 				}
-			}
 
 
 		cv::Mat tt(nHeight, nWidth, CV_8UC3, tempimg);
