@@ -241,6 +241,9 @@ void CImage::redraw(bool isMouseMove)
 		}
 		// scaling
 		m_qImageScreen = m_qImage.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		m_qImageScreen =m_bg_mask.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		m_qImageScreen = m_fg_mask.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
 	}
 	else {
 	}
@@ -264,7 +267,7 @@ void CImage::drawLineTo(const QPoint &endPoint)
 		update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
 		lastPoint = endPoint;
 
-	cv:circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()), cv::GC_BGD, -1);
+	cv:circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()), rad, cv::GC_BGD, -1);
 	}
 	else if (shift_key) 
 	{
@@ -279,7 +282,7 @@ void CImage::drawLineTo(const QPoint &endPoint)
 		update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
 		lastPoint = endPoint;
 
-		cv::circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()), cv::GC_FGD, -1);
+		cv::circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()),rad, cv::GC_FGD, -1);
 		
 	}
 

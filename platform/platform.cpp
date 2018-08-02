@@ -431,6 +431,7 @@ void CPlatform::run()
 
 
 	cv::Mat prmask(nWidth, nHeight, CV_8UC1);
+	cv::Mat pmask(nWidth, nHeight, CV_8UC1);
 	if (stat == false) {
 		roi = cv::Rect(cv::Point2i(xst, yst), cv::Point2i(xed, yed));
 		mask = cv::Mat(nWidth, nHeight, CV_8UC1);
@@ -443,7 +444,6 @@ void CPlatform::run()
 	pucImage = new unsigned char[nWidth * nHeight * 3];
 	memset(pucImage, 0, sizeof(unsigned char) * nWidth * nHeight);
 
-	// sample code
 	for (int row = 0; row < nHeight; row++) {
 		for (int col = 0; col < nWidth; col++)
 			for (int ch = 0; ch < 3; ch++)
@@ -453,43 +453,29 @@ void CPlatform::run()
 			}
 	}
 	cv::Mat image(nHeight, nWidth, CV_8UC3, pucImage);
-
 	cv::Mat foreground(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 	cv::Mat background(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 
-	//	cv::cvtColor(image, RGBimg, CV_GRAY2RGB);
 	if (stat == false) {
 		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
 		stat = true;
 	}
 	else {
+		/*
+				cv::Mat	bbg = cv::Mat(m_ciImage->m_bg_mask.height(), m_ciImage->m_bg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_bg_mask.bits()), m_ciImage->m_bg_mask.bytesPerLine());
+				cv::Mat	ffg = cv::Mat(m_ciImage->m_fg_mask.height(), m_ciImage->m_fg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_fg_mask.bits()), m_ciImage->m_fg_mask.bytesPerLine());
 
-		cv::Mat	bbg = cv::Mat(m_ciImage->m_bg_mask.height(), m_ciImage->m_bg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_bg_mask.bits()), m_ciImage->m_bg_mask.bytesPerLine());
-		cv::Mat	ffg = cv::Mat(m_ciImage->m_fg_mask.height(), m_ciImage->m_fg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_fg_mask.bits()), m_ciImage->m_fg_mask.bytesPerLine());
-		
-		cv::cvtColor(bbg, bbg, CV_RGB2GRAY);
-		cv::cvtColor(ffg, ffg, CV_RGB2GRAY);
-		cv::threshold(bbg, bbg, 125, 255, cv::THRESH_BINARY);
-		cv::threshold(ffg, ffg, 125, 255, cv::THRESH_BINARY);
+				cv::cvtColor(bbg, bbg, CV_RGB2GRAY);
+				cv::cvtColor(ffg, ffg, CV_RGB2GRAY);
 
-		////mask |= ~ffg;
-		////mask &= bbg;
-
-		//prmask &= ffg;
-	//	prmask &= bbg;
-
-		//for (int row = 0; row < nHeight; row++) {
-		//	for (int col = 0; col < nWidth; col++)
-		//		for (int ch = 0; ch < 3; ch++)
-		//		{
-		//			int index = row*nWidth * 3 + col * 3;
-
-		//		}
-		//}
-
-		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_MASK);
+				cv::threshold(bbg, bbg, 125, 255, cv::THRESH_BINARY);
+				cv::threshold(ffg, ffg, 125, 255, cv::THRESH_BINARY);
+		*/
+			cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_MASK);
 	}
-	cv::compare(mask, cv::GC_PR_FGD, prmask, cv::CMP_EQ);
+	cv::compare(mask, cv::GC_FGD, prmask, cv::CMP_EQ);
+	cv::compare(mask, cv::GC_PR_FGD, pmask, cv::CMP_EQ);
+	prmask+=pmask;
 
 	image.copyTo(foreground, prmask);
 	image.copyTo(background, ~prmask);
@@ -497,6 +483,7 @@ void CPlatform::run()
 	cv::imshow("image", image);
 	cv::imshow("Foreground", foreground);
 	cv::imshow("back", background);
+
 	/*
 	for (int row = 0; row < nHeight; row++) {
 		for (int col = 0; col < nWidth; col++) {
