@@ -430,7 +430,7 @@ void CPlatform::run()
 	int yed = qpoints.last().y();
 
 
-
+	cv::Mat prmask(nWidth, nHeight, CV_8UC1);
 	if (stat == false) {
 		roi = cv::Rect(cv::Point2i(xst, yst), cv::Point2i(xed, yed));
 		mask = cv::Mat(nWidth, nHeight, CV_8UC1);
@@ -464,23 +464,35 @@ void CPlatform::run()
 	}
 	else {
 
-	cv::Mat	bbg = cv::Mat(m_ciImage->m_bg_mask.height(), m_ciImage->m_bg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_bg_mask.bits()), m_ciImage->m_bg_mask.bytesPerLine());
-	cv::Mat	ffg = cv::Mat(m_ciImage->m_fg_mask.height(), m_ciImage->m_fg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_fg_mask.bits()), m_ciImage->m_fg_mask.bytesPerLine());
+		cv::Mat	bbg = cv::Mat(m_ciImage->m_bg_mask.height(), m_ciImage->m_bg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_bg_mask.bits()), m_ciImage->m_bg_mask.bytesPerLine());
+		cv::Mat	ffg = cv::Mat(m_ciImage->m_fg_mask.height(), m_ciImage->m_fg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_fg_mask.bits()), m_ciImage->m_fg_mask.bytesPerLine());
+		
 		cv::cvtColor(bbg, bbg, CV_RGB2GRAY);
 		cv::cvtColor(ffg, ffg, CV_RGB2GRAY);
 		cv::threshold(bbg, bbg, 125, 255, cv::THRESH_BINARY);
 		cv::threshold(ffg, ffg, 125, 255, cv::THRESH_BINARY);
-		mask |= ~ffg;
-		mask &= bbg;
 
-		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
+		////mask |= ~ffg;
+		////mask &= bbg;
+
+		//prmask &= ffg;
+	//	prmask &= bbg;
+
+		//for (int row = 0; row < nHeight; row++) {
+		//	for (int col = 0; col < nWidth; col++)
+		//		for (int ch = 0; ch < 3; ch++)
+		//		{
+		//			int index = row*nWidth * 3 + col * 3;
+
+		//		}
+		//}
+
+		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_MASK);
 	}
+	cv::compare(mask, cv::GC_PR_FGD, prmask, cv::CMP_EQ);
 
-	cv::compare(mask, cv::GC_PR_FGD, mask, cv::CMP_EQ);
-	cv::rectangle(image, roi, cv::Scalar(255, 255, 255), 1);
-	mask;
-	image.copyTo(foreground, mask);
-	image.copyTo(background, ~mask);
+	image.copyTo(foreground, prmask);
+	image.copyTo(background, ~prmask);
 
 	cv::imshow("image", image);
 	cv::imshow("Foreground", foreground);

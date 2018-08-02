@@ -11,7 +11,7 @@ CImage::CImage(QWidget* parent)
 	m_qImageScreenDrawingPosition->setObjectName(QStringLiteral("label"));
 	m_qImageScreenDrawingPosition->setGeometry(QRect(0, 0, 512, 512));
 	m_qImageScreenDrawingPosition->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
-	//	m_qImageScreenDrawingPosition->setMouseTracking(true);
+	m_qImageScreenDrawingPosition->setMouseTracking(true);
 
 	init();
 }
@@ -98,7 +98,7 @@ void CImage::setImageScreenSize(int nScreenWidth, int nScreenHeight)
 			m_qImage.setPixel(col, row, qRgb(value, value, value));
 		}
 	}
-	
+
 	m_nImageScreenWidth = nScreenWidth;
 	m_nImageScreenHeight = nScreenHeight;
 
@@ -223,7 +223,7 @@ void CImage::redraw(bool isMouseMove)
 
 	// 기본 이미지, Label 이미지, Selected Region
 
-	
+
 	if (isMouseMove == false) {
 		// 기본 XA 영상 (0~255로 정규화)
 		int value[3];
@@ -250,19 +250,9 @@ void CImage::redraw(bool isMouseMove)
 // Event //
 void CImage::drawLineTo(const QPoint &endPoint)
 {
-	if (shift_key) {
-		QPainter painter(&m_fg_mask);
 
-		painter.setPen(QPen(Qt::blue, 2, Qt::SolidLine, Qt::RoundCap,
-			Qt::RoundJoin));
-		painter.drawLine(lastPoint, endPoint);
+	if (ctrl_key) {
 
-		int rad = 1;
-
-		update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
-		lastPoint = endPoint;
-	}
-	else if (ctrl_key) {
 		QPainter painter(&m_bg_mask);
 
 		painter.setPen(QPen(Qt::red, 2, Qt::SolidLine, Qt::RoundCap,
@@ -273,8 +263,26 @@ void CImage::drawLineTo(const QPoint &endPoint)
 
 		update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
 		lastPoint = endPoint;
+
+	cv:circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()), cv::GC_BGD, -1);
 	}
-	
+	else if (shift_key) 
+	{
+		QPainter painter(&m_fg_mask);
+
+		painter.setPen(QPen(Qt::blue, 2, Qt::SolidLine, Qt::RoundCap,
+			Qt::RoundJoin));
+		painter.drawLine(lastPoint, endPoint);
+
+		int rad = 1;
+
+		update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
+		lastPoint = endPoint;
+
+		cv::circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()), cv::GC_FGD, -1);
+		
+	}
+
 }
 
 void CImage::mousePressEvent(QMouseEvent* event)
@@ -353,7 +361,7 @@ void CImage::paintEvent(QPaintEvent* event)
 {
 	QPainter painter(this);
 	QRect dirtyRect = event->rect();
-	
+
 	if (shift_key)
 		painter.drawImage(dirtyRect, m_fg_mask, dirtyRect);
 	else if (ctrl_key)

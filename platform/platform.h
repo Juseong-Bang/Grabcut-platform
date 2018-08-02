@@ -66,14 +66,13 @@ public:
 	void createProgressBar();
 	void setSignalSlot();
 	void setProgressBarValue(int nCurrentIdx, int nMaximumIdx);
-
 protected:
 	void keyPressEvent(QKeyEvent* event);
 	void keyReleaseEvent(QKeyEvent* event);
 	void dropEvent(QDropEvent* event);
 	void dragEnterEvent(QDragEnterEvent* event);
 	void resizeEvent(QResizeEvent* event);
-
+	
 public slots:
 	// load + fileDirectory
 	void readDICOM(QStringList fileList);
