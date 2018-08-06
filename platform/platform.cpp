@@ -484,23 +484,24 @@ void CPlatform::run()
 	cv::imshow("Foreground", foreground);
 	cv::imshow("back", background);
 
-	/*
+	
 	for (int row = 0; row < nHeight; row++) {
-		for (int col = 0; col < nWidth; col++) {
-			int index = row*nWidth + col;
+		for (int col = 0; col < nWidth; col++) 
+			for (int ch = 0; ch < 3; ch++) {
+				int index = row*nWidth * 3 + col * 3;
 			if ((yst == row || row == yed) && (col <= xed && xst <= col))
 			{
-				pucImage[index] = 255;
+				pucImage[index+ch] = 255;
 			}
 			else if ((yst <= row && row <= yed) && (col == xed || xst == col))
 			{
-				pucImage[index] = 255;
+				pucImage[index+ch] = 255;
 			}
 			else
-				pucImage[index] = pusImage[index];
+				pucImage[index+ch] = pusImage[index+ch];
 		}
 	}
-	*/
+	
 	// 결과값 메모리에 복사 //
 	m_ciImage->setImage(pucImage, nWidth, nHeight);
 

@@ -11,7 +11,7 @@ CImage::CImage(QWidget* parent)
 	m_qImageScreenDrawingPosition->setObjectName(QStringLiteral("label"));
 	m_qImageScreenDrawingPosition->setGeometry(QRect(0, 0, 512, 512));
 	m_qImageScreenDrawingPosition->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
-	m_qImageScreenDrawingPosition->setMouseTracking(true);
+	//	m_qImageScreenDrawingPosition->setMouseTracking(true);
 
 	init();
 }
@@ -231,23 +231,30 @@ void CImage::redraw(bool isMouseMove)
 		{
 			for (int col = 0; col < m_nImageWidth; col++)
 			{
+
 				for (int ch = 0; ch < 3; ch++)
 				{
 					int index = row*m_nImageWidth * 3 + col * 3 + ch;
+
 					value[ch] = m_pucImage[index];
 				}
 				m_qImage.setPixel(col, row, qRgb(value[2], value[1], value[0]));
+				if (m_bg_mask.pixel(col, row) == qRgb(255, 0, 0))
+				{
+					m_qImage.setPixel(col, row, qRgb(255, 0, 0));
+				}
+				if (m_fg_mask.pixel(col, row) == qRgb(0, 0, 255))
+				{
+					m_qImage.setPixel(col, row, qRgb(0, 0, 255));
+				}
+
 			}
 		}
-		// scaling
-		m_qImageScreen = m_qImage.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-		m_qImageScreen =m_bg_mask.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-		m_qImageScreen = m_fg_mask.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
 	}
-	else {
-	}
-
+	// scaling
+	m_qImageScreen = m_qImage.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	//m_qImageScreen =m_bg_mask.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	//m_qImageScreen = m_fg_mask.scaled(QSize(m_nImageScreenWidth, m_nImageScreenHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);	
 
 }
 // Event //
@@ -258,8 +265,7 @@ void CImage::drawLineTo(const QPoint &endPoint)
 
 		QPainter painter(&m_bg_mask);
 
-		painter.setPen(QPen(Qt::red, 2, Qt::SolidLine, Qt::RoundCap,
-			Qt::RoundJoin));
+		painter.setPen(QPen(Qt::red, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 		painter.drawLine(lastPoint, endPoint);
 
 		int rad = 1;
@@ -269,12 +275,11 @@ void CImage::drawLineTo(const QPoint &endPoint)
 
 	cv:circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()), rad, cv::GC_BGD, -1);
 	}
-	else if (shift_key) 
+	else if (shift_key)
 	{
 		QPainter painter(&m_fg_mask);
 
-		painter.setPen(QPen(Qt::blue, 2, Qt::SolidLine, Qt::RoundCap,
-			Qt::RoundJoin));
+		painter.setPen(QPen(Qt::blue, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 		painter.drawLine(lastPoint, endPoint);
 
 		int rad = 1;
@@ -282,8 +287,8 @@ void CImage::drawLineTo(const QPoint &endPoint)
 		update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
 		lastPoint = endPoint;
 
-		cv::circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()),rad, cv::GC_FGD, -1);
-		
+		cv::circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()), rad, cv::GC_FGD, -1);
+
 	}
 
 }
@@ -371,4 +376,5 @@ void CImage::paintEvent(QPaintEvent* event)
 		painter.drawImage(dirtyRect, m_bg_mask, dirtyRect);
 	else
 		painter.drawImage(dirtyRect, m_qImage, dirtyRect);
+	
 }
