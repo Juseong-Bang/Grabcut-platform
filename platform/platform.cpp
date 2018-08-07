@@ -471,39 +471,40 @@ void CPlatform::run()
 				cv::threshold(bbg, bbg, 125, 255, cv::THRESH_BINARY);
 				cv::threshold(ffg, ffg, 125, 255, cv::THRESH_BINARY);
 		*/
-			cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_MASK);
+		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_MASK);
 	}
 	cv::compare(mask, cv::GC_FGD, prmask, cv::CMP_EQ);
 	cv::compare(mask, cv::GC_PR_FGD, pmask, cv::CMP_EQ);
-	prmask+=pmask;
+	prmask += pmask;
 
 	image.copyTo(foreground, prmask);
 	image.copyTo(background, ~prmask);
-
-	cv::imshow("image", image);
+	cv::imshow("rect", image(roi));
 	cv::imshow("Foreground", foreground);
 	cv::imshow("back", background);
 
-	
+
 	for (int row = 0; row < nHeight; row++) {
-		for (int col = 0; col < nWidth; col++) 
+		for (int col = 0; col < nWidth; col++)
 			for (int ch = 0; ch < 3; ch++) {
 				int index = row*nWidth * 3 + col * 3;
-			if ((yst == row || row == yed) && (col <= xed && xst <= col))
-			{
-				pucImage[index+ch] = 255;
+				if ((yst == row || row == yed) && (col <= xed && xst <= col))
+				{
+					pucImage[index + ch] = 255;
+				}
+				else if ((yst <= row && row <= yed) && (col == xed || xst == col))
+				{
+					pucImage[index + ch] = 255;
+				}
+				else
+					pucImage[index + ch] = pusImage[index + ch];
 			}
-			else if ((yst <= row && row <= yed) && (col == xed || xst == col))
-			{
-				pucImage[index+ch] = 255;
-			}
-			else
-				pucImage[index+ch] = pusImage[index+ch];
-		}
 	}
-	
+
 	// 결과값 메모리에 복사 //
 	m_ciImage->setImage(pucImage, nWidth, nHeight);
+	m_ciImage->m_mask = QImage(nWidth, nHeight, QImage::Format_RGB32);
+	m_ciImage->redraw(false);
 
 	// 메모리 소멸 //
 	SAFE_DELETE_ARRAY(pusImage);

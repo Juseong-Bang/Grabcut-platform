@@ -31,9 +31,8 @@ public:
 	bool scribbling; //pen 사용
 	bool ctrl_key;
 	bool shift_key;
-	QImage m_fg_mask; //foreground mask
-	QImage m_bg_mask; //background mask
-
+	QImage m_mask;// back & fore mask
+	
 	unsigned char* m_pucImage;						// image (scale 전)
 	int m_nImageWidth;								// image 가로 (scale 전)
 	int m_nImageHeight;								// image 세로 (scale 전)
