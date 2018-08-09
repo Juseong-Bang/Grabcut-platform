@@ -1,5 +1,5 @@
 #include "platform.h"
-
+#include <queue>
 CPlatform::CPlatform(QWidget *parent)
 	: QMainWindow(parent)
 {
@@ -484,16 +484,19 @@ void CPlatform::run()
 				pucImage[index + ch] = pusImage[index + ch];
 			}
 	}
-	
+
 	cv::Mat image(nHeight, nWidth, CV_8UC3, pucImage);
 	cv::Mat foreground(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 	cv::Mat background(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+
+
 
 	if (stat == false) {
 		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
 		stat = true;
 	}
 	else {
+		//cv::imshow("before mask", mask * 60);
 		/*
 				cv::Mat	bbg = cv::Mat(m_ciImage->m_bg_mask.height(), m_ciImage->m_bg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_bg_mask.bits()), m_ciImage->m_bg_mask.bytesPerLine());
 				cv::Mat	ffg = cv::Mat(m_ciImage->m_fg_mask.height(), m_ciImage->m_fg_mask.width(), CV_8UC4, const_cast<uchar*>(m_ciImage->m_fg_mask.bits()), m_ciImage->m_fg_mask.bytesPerLine());
@@ -506,53 +509,107 @@ void CPlatform::run()
 		*/
 		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_MASK);
 	}
-
+	//cv::imshow("after mask", mask * 60);
 	cv::compare(mask, cv::GC_FGD, prmask, cv::CMP_EQ);
 	cv::compare(mask, cv::GC_PR_FGD, pmask, cv::CMP_EQ);
-	
+
 	prmask += pmask;
 	pmask = mask * 60;
 
 	cv::dilate(prmask, prmask, cv::Mat());
 	cv::erode(prmask, prmask, cv::Mat());
 
-	image.copyTo(foreground, prmask);
-	image.copyTo(background, ~prmask);
-	background *= 0.5;
-	foreground.copyTo(background, prmask);
-
-	//cv::imshow("Foreground", foreground);
-	cv::imshow("back", background);
-
-
+	/*image.copyTo(foreground, prmask);
+	image.copyTo(background, ~prmask);*/
+	queue<pair<int, int>> q; //row,col
+	pmask.setTo(0);
 	
-
-	pucImage = background.data;
-
-/*
+	int ir[4] = { 0,0,-1,1 };
+	int ic[4] = { -1,1,0,0 };
+	int cnt = 1;
+	int mx = 0, r, c;
+	unsigned char mxg=0 ,gr = 0;
 	for (int row = 0; row < nHeight; row++) {
 		for (int col = 0; col < nWidth; col++)
-			for (int ch = 0; ch < 3; ch++) {
-				int index = row*nWidth * 3 + col * 3;
-				if ((yst == row || row == yed) && (col <= xed && xst <= col))
+			if (prmask.at<unsigned char>(row, col) > 0 && pmask.at<unsigned char>(row, col) == 0)
+			{
+				cnt = 1;
+				gr++;
+				q.push(make_pair(row, col));
+				while (!q.empty())
 				{
-					pucImage[index + ch] = 255;
+					r = q.front().first;
+					c = q.front().second;
+					q.pop();
+					for (int a = 0; a < 4; a++)
+					{
+						int nr = r + ir[a];
+						int nc = c + ic[a];
+						if (nr < 0 || nc < 0 || nHeight <= nr || nWidth <= nc)
+							continue;
+						if (prmask.at<unsigned char>(nr, nc) > 0 && pmask.at<unsigned char>(nr, nc) == 0) {
+							pmask.at<unsigned char>(nr, nc) = gr;
+							q.push(make_pair(nr, nc));
+							cnt++;
+						}
+					}
 				}
-				else if ((yst <= row && row <= yed) && (col == xed || xst == col))
+
+				if (cnt > mx)
 				{
-					pucImage[index + ch] = 255;
+					mx = cnt;
+					mxg = gr;
 				}
-				else
-					pucImage[index + ch] = pusImage[index + ch];
 			}
 	}
 
-	*/
-	// 결과값 메모리에 복사 //
+	if(mxg >0 && mx>0)
+	for (int row = 0; row < nHeight; row++) {
+		for (int col = 0; col < nWidth; col++)
+		{
+			if (pmask.at<unsigned char>(row, col) != mxg)
+				prmask.at<unsigned char>(row, col) = 0;
+
+		}
+	}
+	image.copyTo(foreground, prmask);
+	image.copyTo(background, ~prmask);
+
+	background *= 0.5;
+	foreground.copyTo(background, prmask);
+
+	/*cv::imshow("Foreground", foreground);
+	cv::imshow("back", background);
+
+
+*/
+
+	pucImage = background.data;
+
+	/*
+		for (int row = 0; row < nHeight; row++) {
+			for (int col = 0; col < nWidth; col++)
+				for (int ch = 0; ch < 3; ch++) {
+					int index = row*nWidth * 3 + col * 3;
+					if ((yst == row || row == yed) && (col <= xed && xst <= col))
+					{
+						pucImage[index + ch] = 255;
+					}
+					else if ((yst <= row && row <= yed) && (col == xed || xst == col))
+					{
+						pucImage[index + ch] = 255;
+					}
+					else
+						pucImage[index + ch] = pusImage[index + ch];
+				}
+		}
+
+		*/
+		// 결과값 메모리에 복사 //
 	m_ciImage->setImage(pucImage, nWidth, nHeight);
 	m_ciImage->m_mask = QImage(nWidth, nHeight, QImage::Format_RGB32);
 	m_ciImage->redraw(false);
-	
+
 	// 메모리 소멸 //
 	SAFE_DELETE_ARRAY(pusImage);
 	//SAFE_DELETE_ARRAY(pucImage);

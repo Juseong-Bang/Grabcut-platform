@@ -256,17 +256,17 @@ void CImage::redraw(bool isMouseMove)
 // Event //
 void CImage::drawLineTo(const QPoint &endPoint)
 {
-	int rad = 1;
+	int rad = 2;
 	int pen_size = 2; QPainter painter(&m_mask);
 	if (ctrl_key)
 	{
 		painter.setPen(QPen(Qt::red, pen_size, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
-	cv:circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()), rad, cv::GC_BGD, -1);
+		cv::line(m_parent->mask, cvPoint(lastPoint.x(), lastPoint.y()), cvPoint(endPoint.x(), endPoint.y()), cv::GC_BGD, rad);
 	}
 	else if (shift_key)
 	{
 		painter.setPen(QPen(Qt::blue, pen_size, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
-		cv::circle(m_parent->mask, cvPoint(endPoint.x(), endPoint.y()), rad, cv::GC_FGD, -1);
+			cv::line(m_parent->mask, cvPoint(lastPoint.x(), lastPoint.y()), cvPoint(endPoint.x(), endPoint.y()), cv::GC_FGD, rad);
 	}
 	painter.drawLine(lastPoint, endPoint);
 	update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
