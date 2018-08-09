@@ -51,9 +51,13 @@ public:
 	int m_nActivatedFrameIdx;			// 현재 화면에 가시화된 Frame 번호
 	bool stat; //iter 여부 
 	cv::Rect roi;
-	cv::Mat mask;// 마스크
+	cv::Mat mask;// 반복 사용하는 마스크
 	cv::Mat bg;
 	cv::Mat fg;
+
+	vector<vector<cv::Point>> contours;
+	vector<cv::Vec4i> hierarchy;
+
 	// QT layout, action 변수
 public:
 	// layout
@@ -81,6 +85,7 @@ public slots:
 	
 	//
 	void run();
+	void CPlatform::getBinMask(const cv::Mat & comMask, cv::Mat & binMask);
 };
 
 class BorderlessMainWindow: public QMainWindow

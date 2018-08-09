@@ -405,7 +405,42 @@ void CPlatform::showImage(QTreeWidgetItem* item, int column)
 		showImage(nFrameIdx);
 	}
 }
+void CPlatform::getBinMask(const cv::Mat & comMask, cv::Mat & binMask)
+{
+	if (comMask.empty() || comMask.type() != CV_8UC1)
+		std::cout << "comMask is empty or has incorrect type (not CV_8UC1)\n";
+	if (binMask.empty() || binMask.rows != comMask.rows || binMask.cols != comMask.cols)
+		binMask.create(comMask.size(), CV_8UC1);
+	binMask = comMask & 1;
 
+	cv::Mat mask_tmp = binMask * 255;
+	binMask.setTo(0);
+
+	std::vector<std::vector<cv::Point>> contours;
+	std::vector<cv::Vec4i> hierarchy;
+	cv::findContours(mask_tmp, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cv::Point(0, 0));
+
+	//close segmentations (remove holes) + filter segmentations smaller than XX px
+	std::vector<double> areas(contours.size(), 0);
+	double max_area = 0;
+	for (size_t i = 0, s = contours.size(); i < s; i++) {
+		double a = cv::contourArea(contours[i], false);  //  Find the area of contour
+		if (a > max_area)
+			max_area = a;
+		areas[i] = a;
+	}
+
+	double thr = 0.05*max_area;
+	for (size_t i = 0, s = contours.size(); i < s; i++) {
+		if (areas[i] > thr) {
+			cv::drawContours(binMask, contours, i, cv::Scalar(1), CV_FILLED);
+		}
+	}
+	cv::dilate(binMask, binMask, cv::Mat());
+	cv::erode(binMask, binMask, cv::Mat());
+
+
+}
 // 알고리즘 //
 void CPlatform::run()
 {
@@ -417,21 +452,19 @@ void CPlatform::run()
 	// mousePoint // (mouse 좌표는 이미지 크기에 맞도록 자동 변환되어서 반환) (화면크기 x)
 	// QPoint qpoint = m_ciImage->getMousePoint();	// Mouse 좌표 값 한개만 가져올때
 	QVector<QPoint> qpoints = m_ciImage->getMousePoints();	// 드래그
-
-	// 배열 복사 //
+		// 배열 복사 //
 	int nWidth = 0;
 	int nHeight = 0;
 	short* pusImage = NULL;
 	unsigned char* pucImage = NULL;
-
 	int xst = qpoints.front().x();
 	int xed = qpoints.last().x();
 	int yst = qpoints.front().y();
 	int yed = qpoints.last().y();
 
+	cv::Mat prmask(nWidth, nHeight, CV_8UC1);//결과 마스크 
+	cv::Mat pmask(nWidth, nHeight, CV_8UC1);//임시 마스크 
 
-	cv::Mat prmask(nWidth, nHeight, CV_8UC1);
-	cv::Mat pmask(nWidth, nHeight, CV_8UC1);
 	if (stat == false) {
 		roi = cv::Rect(cv::Point2i(xst, yst), cv::Point2i(xed, yed));
 		mask = cv::Mat(nWidth, nHeight, CV_8UC1);
@@ -440,7 +473,6 @@ void CPlatform::run()
 	}
 
 	m_ciData.copyRawImage(0, nWidth, nHeight, pusImage);
-
 	pucImage = new unsigned char[nWidth * nHeight * 3];
 	memset(pucImage, 0, sizeof(unsigned char) * nWidth * nHeight);
 
@@ -452,6 +484,7 @@ void CPlatform::run()
 				pucImage[index + ch] = pusImage[index + ch];
 			}
 	}
+	
 	cv::Mat image(nHeight, nWidth, CV_8UC3, pucImage);
 	cv::Mat foreground(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 	cv::Mat background(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
@@ -473,17 +506,30 @@ void CPlatform::run()
 		*/
 		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_MASK);
 	}
+
 	cv::compare(mask, cv::GC_FGD, prmask, cv::CMP_EQ);
 	cv::compare(mask, cv::GC_PR_FGD, pmask, cv::CMP_EQ);
+	
 	prmask += pmask;
+	pmask = mask * 60;
+
+	cv::dilate(prmask, prmask, cv::Mat());
+	cv::erode(prmask, prmask, cv::Mat());
 
 	image.copyTo(foreground, prmask);
 	image.copyTo(background, ~prmask);
-	cv::imshow("rect", image(roi));
-	cv::imshow("Foreground", foreground);
+	background *= 0.5;
+	foreground.copyTo(background, prmask);
+
+	//cv::imshow("Foreground", foreground);
 	cv::imshow("back", background);
 
 
+	
+
+	pucImage = background.data;
+
+/*
 	for (int row = 0; row < nHeight; row++) {
 		for (int col = 0; col < nWidth; col++)
 			for (int ch = 0; ch < 3; ch++) {
@@ -501,12 +547,13 @@ void CPlatform::run()
 			}
 	}
 
+	*/
 	// 결과값 메모리에 복사 //
 	m_ciImage->setImage(pucImage, nWidth, nHeight);
 	m_ciImage->m_mask = QImage(nWidth, nHeight, QImage::Format_RGB32);
 	m_ciImage->redraw(false);
-
+	
 	// 메모리 소멸 //
 	SAFE_DELETE_ARRAY(pusImage);
-	SAFE_DELETE_ARRAY(pucImage);
+	//SAFE_DELETE_ARRAY(pucImage);
 }
