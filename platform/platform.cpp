@@ -1,5 +1,6 @@
 #include "platform.h"
 #include <queue>
+double mask_opacity=0.5;
 CPlatform::CPlatform(QWidget *parent)
 	: QMainWindow(parent)
 {
@@ -21,7 +22,7 @@ CPlatform::~CPlatform()
 BorderlessMainWindow::BorderlessMainWindow(QWidget *parent) : QMainWindow(parent, Qt::CustomizeWindowHint) {
 	setObjectName("borderlessMainWindow");
 	setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
-	this->resize(1024, 680);
+	this->resize(1600, 900);
 
 	mMainWindow = new CPlatform(this);
 	setWindowTitle(mMainWindow->windowTitle());
@@ -313,6 +314,15 @@ void CPlatform::keyPressEvent(QKeyEvent* event)
 	case Qt::Key_Control:
 		m_ciImage->ctrl_key = true;
 		break;
+	case Qt::Key_Plus:
+		if (mask_opacity < 1)
+			mask_opacity += 0.1;
+		break;
+	case Qt::Key_Minus:
+		if (mask_opacity>0)
+			mask_opacity -= 0.1;
+		break;
+
 
 	}
 
@@ -374,7 +384,7 @@ void CPlatform::showImage(int nFrameIdx)
 
 		ui.gridLayout_2->removeWidget(ui.frame);
 		ui.gridLayout_2->addWidget(m_ciImage, 0, 0);
-
+		
 	}
 	else {
 		m_ciImage->init(this);
@@ -397,6 +407,7 @@ void CPlatform::showImage(int nFrameIdx)
 	}
 
 	m_ciImage->setImageScreenSize(nWidth, nHeight);
+	
 }
 void CPlatform::showImage(QTreeWidgetItem* item, int column)
 {
@@ -429,6 +440,7 @@ void CPlatform::getBinMask(const cv::Mat & comMask, cv::Mat & binMask)
 			max_area = a;
 		areas[i] = a;
 	}
+<<<<<<< HEAD
 
 	double thr = 0.05*max_area;
 	for (size_t i = 0, s = contours.size(); i < s; i++) {
@@ -439,6 +451,18 @@ void CPlatform::getBinMask(const cv::Mat & comMask, cv::Mat & binMask)
 	cv::dilate(binMask, binMask, cv::Mat());
 	cv::erode(binMask, binMask, cv::Mat());
 
+=======
+
+	double thr = 0.05*max_area;
+	for (size_t i = 0, s = contours.size(); i < s; i++) {
+		if (areas[i] > thr) {
+			cv::drawContours(binMask, contours, i, cv::Scalar(1), CV_FILLED);
+		}
+	}
+	cv::dilate(binMask, binMask, cv::Mat());
+	cv::erode(binMask, binMask, cv::Mat());
+
+>>>>>>> parent of fa8198e... face auto detect
 
 }
 // 알고리즘 //
@@ -489,8 +513,32 @@ void CPlatform::run()
 	cv::Mat foreground(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 	cv::Mat background(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+	CV_Assert(face_cas.load("C:/opencv/data/haarcascades/haarcascade_frontalface_default.xml"));
+	cv::Mat tmp;
+	cv::cvtColor(image, tmp, CV_RGB2GRAY);
+=======
+>>>>>>> parent of fa8198e... face auto detect
 
 
+<<<<<<< HEAD
+	if (face.size() > 0)
+		roi = cv::Rect(face[0].x, face[0].y*0.7, face[0].width*1.1, face[0].height*1.3);
+	else
+	{
+		m_ciImage->setImage(pucImage, nWidth, nHeight);
+		m_ciImage->m_mask = QImage(nWidth, nHeight, QImage::Format_RGB32);
+		m_ciImage->redraw(false);
+		return;
+
+	}
+=======
+>>>>>>> parent of fa8198e... face auto detect
+=======
+
+
+>>>>>>> parent of fa8198e... face auto detect
 	if (stat == false) {
 		cv::grabCut(image, mask, roi, bg, fg, 1, cv::GC_INIT_WITH_RECT);
 		stat = true;
@@ -575,42 +623,56 @@ void CPlatform::run()
 	image.copyTo(foreground, prmask);
 	image.copyTo(background, ~prmask);
 
-	background *= 0.5;
+	background *= mask_opacity;
 	foreground.copyTo(background, prmask);
 
+<<<<<<< HEAD
+	//cv::imshow("Foreground", foreground);
+	//cv::imshow("back", background);
+
+=======
 	/*cv::imshow("Foreground", foreground);
 	cv::imshow("back", background);
+<<<<<<< HEAD
+>>>>>>> parent of fa8198e... face auto detect
+
+=======
 
 
 */
+>>>>>>> parent of fa8198e... face auto detect
 
-	pucImage = background.data;
+*/
 
-	/*
+	//pucImage = background.data;
+
+	
 		for (int row = 0; row < nHeight; row++) {
 			for (int col = 0; col < nWidth; col++)
 				for (int ch = 0; ch < 3; ch++) {
 					int index = row*nWidth * 3 + col * 3;
-					if ((yst == row || row == yed) && (col <= xed && xst <= col))
-					{
-						pucImage[index + ch] = 255;
-					}
-					else if ((yst <= row && row <= yed) && (col == xed || xst == col))
-					{
-						pucImage[index + ch] = 255;
-					}
-					else
-						pucImage[index + ch] = pusImage[index + ch];
+						pucImage[index + ch] = background.data[index + ch];
 				}
 		}
 
-		*/
+		
 		// 결과값 메모리에 복사 //
 	m_ciImage->setImage(pucImage, nWidth, nHeight);
 	m_ciImage->m_mask = QImage(nWidth, nHeight, QImage::Format_RGB32);
 	m_ciImage->redraw(false);
+<<<<<<< HEAD
+	// 메모리 소멸 //
+	SAFE_DELETE_ARRAY(pusImage);
+	SAFE_DELETE_ARRAY(pucImage);
+}
+=======
 
 	// 메모리 소멸 //
 	SAFE_DELETE_ARRAY(pusImage);
 	//SAFE_DELETE_ARRAY(pucImage);
+<<<<<<< HEAD
 }
+>>>>>>> parent of fa8198e... face auto detect
+=======
+}
+>>>>>>> parent of fa8198e... face auto detect

@@ -57,6 +57,10 @@ public:
 
 	vector<vector<cv::Point>> contours;
 	vector<cv::Vec4i> hierarchy;
+<<<<<<< HEAD
+
+=======
+>>>>>>> parent of fa8198e... face auto detect
 
 	// QT layout, action º¯¼ö
 public:
